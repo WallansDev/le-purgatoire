@@ -45,11 +45,8 @@ composer install
 npm install
 
 # 2. Configurer l'environnement
-cp .env.example .env
+cp .env.example .env # Configurer le .env
 php artisan key:generate
-
-# 4. Créer la base de données MySQL (si elle n'existe pas)
---
 
 # 4. Exécuter les migrations et seeders
 php artisan migrate --seed
