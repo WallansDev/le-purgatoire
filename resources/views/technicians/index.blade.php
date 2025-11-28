@@ -38,7 +38,7 @@
                         </div>
                     </form>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-[1000px] w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -59,7 +59,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Statut
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 shadow-inner">
                                         Actions
                                     </th>
                                 </tr>
@@ -101,7 +101,7 @@
                                                 {{ $technician->is_active ? 'Actif' : 'Inactif' }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
                                             <a href="{{ route('technicians.show', $technician) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
                                             <a href="{{ route('technicians.edit', $technician) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
                                             <form action="{{ route('technicians.destroy', $technician) }}" method="POST" class="inline">

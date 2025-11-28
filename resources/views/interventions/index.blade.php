@@ -59,7 +59,7 @@
                         </div>
                     </form>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-[1200px] w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -86,7 +86,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Note
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 shadow-inner">
                                         Actions
                                     </th>
                                 </tr>
@@ -125,15 +125,22 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex flex-wrap gap-2">
-                                                @forelse($intervention->tags as $tag)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border" style="border-color: {{ $tag->color ?? '#c7d2fe' }}; color: {{ $tag->color ?? '#4f46e5' }}">
-                                                        {{ $tag->name }}
+                                            @php
+                                                $visibleTag = $intervention->tags->first();
+                                                $remainingCount = max($intervention->tags->count() - 1, 0);
+                                            @endphp
+                                            @if($visibleTag)
+                                                <div class="flex items-center gap-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border" style="border-color: {{ $visibleTag->color ?? '#c7d2fe' }}; color: {{ $visibleTag->color ?? '#4f46e5' }}">
+                                                        {{ $visibleTag->name }}
                                                     </span>
-                                                @empty
-                                                    <span class="text-xs text-gray-400">—</span>
-                                                @endforelse
-                                            </div>
+                                                    @if($remainingCount > 0)
+                                                        <span class="text-xs text-gray-500">+{{ $remainingCount }}</span>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400">—</span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($intervention->finished_at)
@@ -172,7 +179,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
                                             <a href="{{ route('interventions.show', $intervention) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
                                             <a href="{{ route('interventions.edit', $intervention) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
                                             <form action="{{ route('interventions.destroy', $intervention) }}" method="POST" class="inline">

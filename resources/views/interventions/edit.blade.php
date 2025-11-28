@@ -1,4 +1,8 @@
 <x-app-layout>
+    @once
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css">
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js" defer></script>
+    @endonce
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Modifier l\'intervention') }}
@@ -69,21 +73,20 @@
                                 <x-input-error :messages="$errors->get('address')" class="mt-2" />
                             </div>
 
-                        <div class="md:col-span-2">
-                            <x-input-label for="tags" :value="__('Tags associés')" />
-                            <select id="tags" name="tags[]" multiple class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                @php
-                                    $selectedTags = collect(old('tags', $intervention->tags->pluck('id')->toArray()));
-                                @endphp
-                                @foreach($tags as $tag)
-                                    <option value="{{ $tag->id }}" {{ $selectedTags->contains($tag->id) ? 'selected' : '' }}>
-                                        {{ $tag->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="text-sm text-gray-500 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs tags.</p>
-                            <x-input-error :messages="$errors->get('tags')" class="mt-2" />
-                        </div>
+                            <div class="md:col-span-2">
+                                <x-input-label for="tags" :value="__('Tags associés')" />
+                                <select id="tags" name="tags[]" multiple class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    @php
+                                        $selectedTags = collect(old('tags', $intervention->tags->pluck('id')->toArray()));
+                                    @endphp
+                                    @foreach($tags as $tag)
+                                        <option value="{{ $tag->id }}" data-color="{{ $tag->color ?? '#4f46e5' }}" {{ $selectedTags->contains($tag->id) ? 'selected' : '' }}>
+                                            {{ $tag->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('tags')" class="mt-2" />
+                            </div>
 
                             <div>
                                 <x-input-label for="is_completed" :value="__('Intervention terminée ?')" />
@@ -117,14 +120,50 @@
                         </div>
 
                         <script>
-                            document.getElementById('is_completed').addEventListener('change', function() {
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const checkbox = document.getElementById('is_completed');
                                 const reasonField = document.getElementById('non_completion_reason_field');
-                                if (!this.checked) {
-                                    reasonField.style.display = 'block';
-                                    document.getElementById('non_completion_reason').setAttribute('required', 'required');
-                                } else {
-                                    reasonField.style.display = 'none';
-                                    document.getElementById('non_completion_reason').removeAttribute('required');
+                                const reasonInput = document.getElementById('non_completion_reason');
+
+                                const syncReasonField = () => {
+                                    if (!checkbox.checked) {
+                                        reasonField.style.display = 'block';
+                                        reasonInput?.setAttribute('required', 'required');
+                                    } else {
+                                        reasonField.style.display = 'none';
+                                        reasonInput?.removeAttribute('required');
+                                    }
+                                };
+
+                                if (checkbox && reasonField) {
+                                    syncReasonField();
+                                    checkbox.addEventListener('change', syncReasonField);
+                                }
+
+                                const tagSelect = document.getElementById('tags');
+                                if (tagSelect && window.TomSelect) {
+                                    new TomSelect(tagSelect, {
+                                        plugins: ['remove_button'],
+                                        persist: false,
+                                        create: false,
+                                        placeholder: 'Sélectionnez des tags',
+                                        render: {
+                                            option(data, escape) {
+                                                const color = data.$option?.dataset.color || '#4f46e5';
+                                                return `<div class="flex items-center gap-2">
+                                                            <span class="w-2.5 h-2.5 rounded-full" style="background-color:${color}"></span>
+                                                            <span>${escape(data.text)}</span>
+                                                        </div>`;
+                                            },
+                                            item(data, escape) {
+                                                const color = data.$option?.dataset.color || '#4f46e5';
+                                                return `<div class="flex items-center gap-2">
+                                                            <span class="w-2 h-2 rounded-full" style="background-color:${color}"></span>
+                                                            <span>${escape(data.text)}</span>
+                                                        </div>`;
+                                            },
+                                        },
+                                    });
                                 }
                             });
                         </script>
