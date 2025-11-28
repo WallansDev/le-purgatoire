@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureOwnerExists;
 use App\Http\Middleware\EnsurePasswordIsChanged;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
@@ -16,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'password.changed' => EnsurePasswordIsChanged::class,
+            'owner.exists' => EnsureOwnerExists::class,
+        ]);
+        
+        // Appliquer le middleware globalement pour vérifier qu'un owner existe
+        $middleware->web(append: [
+            EnsureOwnerExists::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

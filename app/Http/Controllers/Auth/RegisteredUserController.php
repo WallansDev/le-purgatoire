@@ -16,40 +16,23 @@ class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
+     * L'inscription publique est désactivée - seuls les admins peuvent créer des comptes.
      */
     public function create(): View
     {
-        return view('auth.register');
+        // L'inscription publique est désactivée
+        abort(404, 'L\'inscription publique n\'est pas disponible. Contactez un administrateur pour créer un compte.');
     }
 
     /**
      * Handle an incoming registration request.
+     * L'inscription publique est désactivée - seuls les admins peuvent créer des comptes.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        [$firstName, $lastName] = array_pad(explode(' ', $request->name, 2), 2, null);
-
-        $user = User::create([
-            'first_name' => $firstName ?? $request->name,
-            'last_name' => $lastName,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'must_change_password' => false,
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        // L'inscription publique est désactivée
+        abort(404, 'L\'inscription publique n\'est pas disponible. Contactez un administrateur pour créer un compte.');
     }
 }

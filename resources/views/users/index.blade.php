@@ -81,7 +81,11 @@
                                             <div class="text-sm text-gray-500">{{ $user->phone ?? '-' }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($user->is_admin)
+                                            @if($user->isOwner())
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                    Propriétaire
+                                                </span>
+                                            @elseif($user->is_admin)
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                                     Admin
                                                 </span>
@@ -102,12 +106,18 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
-                                            <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
-                                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</button>
-                                            </form>
+                                            <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                {{ $user->isOwner() ? 'Modifier le mot de passe' : 'Modifier' }}
+                                            </a>
+                                            @if (!$user->isOwner())
+                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</button>
+                                                </form>
+                                            @else
+                                                <span class="text-gray-400 text-xs" title="Le compte propriétaire ne peut pas être supprimé">Non supprimable</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

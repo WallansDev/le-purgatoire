@@ -72,6 +72,23 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        // Si c'est le compte owner, seule la modification du mot de passe est autorisée
+        if ($user->isOwner()) {
+            $validated = $request->validate([
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+
+            $user->update([
+                'password' => Hash::make($validated['password']),
+                'must_change_password' => false,
+            ]);
+
+            return redirect()
+                ->route('users.index')
+                ->with('success', "Mot de passe du compte propriétaire mis à jour.");
+        }
+
+        // Pour les autres utilisateurs, modification complète autorisée
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -109,6 +126,13 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
+        // Empêcher la suppression du compte owner
+        if ($user->isOwner()) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'Le compte propriétaire ne peut pas être supprimé.');
+        }
+
         if ($request->user()->is($user)) {
             return redirect()
                 ->route('users.index')

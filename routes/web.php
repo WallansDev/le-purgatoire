@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\OwnerSetupController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForcedPasswordController;
@@ -9,6 +10,13 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+// Route pour la création du compte owner initial (accessible sans authentification)
+Route::get('setup-owner', [OwnerSetupController::class, 'create'])
+    ->name('owner.setup.create');
+
+Route::post('setup-owner', [OwnerSetupController::class, 'store'])
+    ->name('owner.setup.store');
 
 Route::get('/', function () {
     return view('welcome');

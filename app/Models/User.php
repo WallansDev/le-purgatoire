@@ -69,4 +69,20 @@ class User extends Authenticatable
     {
         return (bool) $this->is_admin;
     }
+
+    /**
+     * Vérifie si cet utilisateur est le compte owner (premier utilisateur créé).
+     */
+    public function isOwner(): bool
+    {
+        // Le owner est l'utilisateur avec l'ID le plus petit (premier créé)
+        // Utilisation d'un cache pour éviter les requêtes répétées
+        static $firstUserId = null;
+        
+        if ($firstUserId === null) {
+            $firstUserId = static::min('id');
+        }
+        
+        return $firstUserId !== null && $this->id === $firstUserId;
+    }
 }
