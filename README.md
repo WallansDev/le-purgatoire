@@ -39,34 +39,7 @@ _(Adapter selon la réelle stack du projet si besoin)_
 
 ## 🚀 Démarrage rapide
 
-### Installation automatique (Recommandé)
-
-#### Windows
-
-```bash
-# Double-cliquez sur setup.bat ou exécutez dans PowerShell :
-.\setup.bat
-
-# Puis pour démarrer l'application :
-.\start.bat
-```
-
-#### Linux / macOS
-
-```bash
-# Rendre les scripts exécutables (première fois seulement)
-chmod +x setup.sh start.sh
-
-# Installer l'application
-./setup.sh
-
-# Puis pour démarrer l'application :
-./start.sh
-```
-
 ### Installation manuelle
-
-Si vous préférez installer manuellement :
 
 ```bash
 # 1. Installer les dépendances
@@ -77,8 +50,8 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 3. Créer la base de données SQLite (si elle n'existe pas)
-touch database/database.sqlite
+# 4. Créer la base de données MySQL (si elle n'existe pas)
+--
 
 # 4. Exécuter les migrations et seeders
 php artisan migrate --seed
@@ -86,8 +59,8 @@ php artisan migrate --seed
 # 5. Démarrer les serveurs
 npm run serve
 # Ou séparément :
-# php artisan serve    (dans un terminal)
-# npm run dev          (dans un autre terminal)
+php artisan serve    #(dans un terminal)
+npm run dev          #(dans un autre terminal)
 ```
 
 L'application sera accessible sur **http://localhost:8000**
@@ -99,7 +72,7 @@ L'application sera accessible sur **http://localhost:8000**
 -   **Node.js** 18+ et **npm**
 -   **MySQL** (ou autre)
 
-## ✅ Tests
+## ✅ Tests unitaires
 
 ```bash
 php artisan test
