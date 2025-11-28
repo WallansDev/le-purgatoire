@@ -7,32 +7,35 @@
 
 Application web de gestion d’interventions permettant de référencer:
 
--   Les entreprises clientes
+-   Les entreprises prestataires
 -   Les techniciens
 -   Les interventions planifiées, en cours ou terminées
 
 L’interface inclut un tableau de bord riche en statistiques, comme le top 10 des meilleurs techniciens, les retards, les interventions à finir et celles non notées.
+<br><br>
 
 ## ✨ Fonctionnalités principales
 
--   **Référentiel entreprise & techniciens** : fiches détaillées, coordonnées, niveau de compétence
+-   **Référentiel entreprise & techniciens** : coordonnées, notation globale, notation ponctualité
 -   **Gestion des interventions** : suivi complet (planification, statut, progression, notation)
 -   **Dashboard** :
-    -   Top 10 des meilleurs techniciens
-    -   Suivi des retards
+    -   Top 10 des meilleurs techniciens (Scoring basé sur le nombres d'interventions, et la ponctualité)
     -   Interventions à finaliser ou non démarrées
     -   Notation et feedback par intervention
 -   **Statistiques avancées** : vues synthétiques pour aider à la priorisation et à la qualité de service
 -   **Interface claire** : navigation structurée et accès rapide aux actions fréquentes
+    <br><br>
 
-## 🧱 Architecture & Stack technique
+## 🧱 Architecture & stack (suggestion)
 
--   **Framework backend** : Laravel 12 / PHP 8.2+
--   **Base de données** : SQLite (par défaut, facile à migrer vers MySQL/PostgreSQL)
--   **Frontend** : Blade Templates / Tailwind CSS
--   **Build tool** : Vite
--   **Admin panel** : Filament 4.2
--   **Authentification** : Laravel Breeze
+_(Adapter selon la réelle stack du projet si besoin)_
+
+-   Framework backend : Laravel 12 / PHP 8.2+
+-   Base de données : MySQL (par défaut, facile à migrer vers PostgreSQL ou autre)
+-   Build tool : Vite
+-   Admin panel : Filament 4.2
+-   Authentification : Laravel Breeze  
+    <br>
 
 ## 🚀 Démarrage rapide
 
@@ -94,21 +97,7 @@ L'application sera accessible sur **http://localhost:8000**
 -   **PHP** 8.2 ou supérieur
 -   **Composer** (gestionnaire de dépendances PHP)
 -   **Node.js** 18+ et **npm**
--   **SQLite** (inclus avec PHP, aucune configuration nécessaire)
-
-### 📋 Que font les scripts d'automatisation ?
-
-Les scripts `setup.bat` / `setup.sh` effectuent automatiquement :
-
-1. ✅ Vérification des prérequis (PHP, Composer, Node.js)
-2. ✅ Installation des dépendances PHP (`composer install`)
-3. ✅ Installation des dépendances Node.js (`npm install`)
-4. ✅ Création du fichier `.env` depuis `.env.example`
-5. ✅ Génération de la clé d'application Laravel
-6. ✅ Création de la base de données SQLite
-7. ✅ Exécution des migrations et seeders
-
-Les scripts `start.bat` / `start.sh` lancent simplement l'application avec les deux serveurs (Laravel + Vite) en parallèle.
+-   **MySQL** (ou autre)
 
 ## ✅ Tests
 
@@ -129,9 +118,6 @@ php artisan view:clear
 
 # Recréer la base de données
 php artisan migrate:fresh --seed
-
-# Accéder à Tinker (console Laravel)
-php artisan tinker
 ```
 
 ## 🧑‍💻 Contribution
@@ -144,8 +130,4 @@ php artisan tinker
 
 ## 📄 Licence
 
-_(À compléter selon le choix de licence : MIT, GPL, etc.)_
-
----
-
-Besoin d’ajouter des captures d’écran, une démo ou un badge de CI ? N’hésite pas à demander !
+Pour l'instant <i>Le Purgatoire</i> est un projet en open-source. N'hésitez pas à y contribuer.
