@@ -106,17 +106,17 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
-                                            <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                {{ $user->isOwner() ? 'Modifier le mot de passe' : 'Modifier' }}
-                                            </a>
                                             @if (!$user->isOwner())
+                                                <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                    Modifier
+                                                </a>
                                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</button>
                                                 </form>
                                             @else
-                                                <span class="text-gray-400 text-xs" title="Le compte propriétaire ne peut pas être supprimé">Non supprimable</span>
+                                                <span class="text-gray-400 text-xs" title="Le compte propriétaire ne peut pas être modifié ni supprimé par un administrateur">Non modifiable</span>
                                             @endif
                                         </td>
                                     </tr>

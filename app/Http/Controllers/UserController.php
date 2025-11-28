@@ -67,25 +67,21 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        // Empêcher l'accès à la page d'édition du compte owner
+        if ($user->isOwner()) {
+            abort(403, 'Le compte propriétaire ne peut pas être modifié par un administrateur.');
+        }
+
         return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        // Si c'est le compte owner, seule la modification du mot de passe est autorisée
+        // Empêcher toute modification du compte owner par un administrateur
         if ($user->isOwner()) {
-            $validated = $request->validate([
-                'password' => 'required|string|min:8|confirmed',
-            ]);
-
-            $user->update([
-                'password' => Hash::make($validated['password']),
-                'must_change_password' => false,
-            ]);
-
             return redirect()
                 ->route('users.index')
-                ->with('success', "Mot de passe du compte propriétaire mis à jour.");
+                ->with('error', 'Le compte propriétaire ne peut pas être modifié par un administrateur. Le propriétaire doit modifier son mot de passe via son profil.');
         }
 
         // Pour les autres utilisateurs, modification complète autorisée

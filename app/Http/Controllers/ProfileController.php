@@ -45,11 +45,18 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        // Empêcher la suppression du compte owner
+        if ($user->isOwner()) {
+            return redirect()
+                ->route('profile.edit')
+                ->with('error', 'Le compte propriétaire ne peut pas être supprimé.');
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
 
         Auth::logout();
 
