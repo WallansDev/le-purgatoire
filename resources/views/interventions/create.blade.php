@@ -68,6 +68,19 @@
                                 <x-input-error :messages="$errors->get('address')" class="mt-2" />
                             </div>
 
+                        <div class="md:col-span-2">
+                            <x-input-label for="tags" :value="__('Tags associés')" />
+                            <select id="tags" name="tags[]" multiple class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @foreach($tags as $tag)
+                                    <option value="{{ $tag->id }}" {{ collect(old('tags', []))->contains($tag->id) ? 'selected' : '' }}>
+                                        {{ $tag->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-sm text-gray-500 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs tags.</p>
+                            <x-input-error :messages="$errors->get('tags')" class="mt-2" />
+                        </div>
+
                             <div>
                                 <x-input-label for="is_completed" :value="__('Intervention terminée ?')" />
                                 <div class="mt-2">

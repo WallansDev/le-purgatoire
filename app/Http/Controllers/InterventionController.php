@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Intervention;
+use App\Models\Tag;
 use App\Models\Technician;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,7 +16,7 @@ class InterventionController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Intervention::with('technician.company');
+        $query = Intervention::with(['technician.company', 'tags']);
         
         // Recherche par technicien, client (title) ou date
         if ($request->filled('search')) {
@@ -28,6 +29,12 @@ class InterventionController extends Controller
                   });
             });
         }
+
+        if ($request->filled('tag')) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('tags.id', $request->get('tag'));
+            });
+        }
         
         // Recherche par date si fournie
         if ($request->filled('date_search')) {
@@ -36,8 +43,9 @@ class InterventionController extends Controller
         }
         
         $interventions = $query->latest('scheduled_at')->paginate(15)->withQueryString();
+        $tags = Tag::orderBy('name')->get();
         
-        return view('interventions.index', compact('interventions'));
+        return view('interventions.index', compact('interventions', 'tags'));
     }
 
     /**
@@ -49,8 +57,9 @@ class InterventionController extends Controller
             ->with('company')
             ->orderBy('first_name')
             ->get();
+        $tags = Tag::orderBy('name')->get();
         
-        return view('interventions.create', compact('technicians'));
+        return view('interventions.create', compact('technicians', 'tags'));
     }
 
     /**
@@ -71,9 +80,13 @@ class InterventionController extends Controller
             'non_completion_reason' => 'nullable|string|required_if:is_completed,false',
             'notes' => 'nullable|string',
             'client_comments' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ]);
 
-        Intervention::create($validated);
+        $intervention = Intervention::create($validated);
+
+        $intervention->tags()->sync($validated['tags'] ?? []);
 
         return redirect()->route('interventions.index')
             ->with('success', 'Intervention créée avec succès.');
@@ -84,7 +97,7 @@ class InterventionController extends Controller
      */
     public function show(Intervention $intervention): View
     {
-        $intervention->load('technician.company');
+        $intervention->load('technician.company', 'tags');
         
         return view('interventions.show', compact('intervention'));
     }
@@ -99,7 +112,9 @@ class InterventionController extends Controller
             ->orderBy('first_name')
             ->get();
         
-        return view('interventions.edit', compact('intervention', 'technicians'));
+        $tags = Tag::orderBy('name')->get();
+
+        return view('interventions.edit', compact('intervention', 'technicians', 'tags'));
     }
 
     /**
@@ -116,9 +131,22 @@ class InterventionController extends Controller
             'description' => 'nullable|string',
             'address' => 'nullable|string',
             'note' => 'nullable|integer|min:0|max:5',
+            'is_completed' => 'nullable|boolean',
+            'non_completion_reason' => 'nullable|string|required_if:is_completed,false|required_if:is_completed,0',
+            'notes' => 'nullable|string',
+            'client_comments' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ]);
 
+        $validated['is_completed'] = $request->boolean('is_completed');
+
+        if ($validated['is_completed']) {
+            $validated['non_completion_reason'] = null;
+        }
+
         $intervention->update($validated);
+        $intervention->tags()->sync($validated['tags'] ?? []);
 
         return redirect()->route('interventions.index')
             ->with('success', 'Intervention mise à jour avec succès.');

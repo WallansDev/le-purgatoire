@@ -8,7 +8,9 @@
 
         <!-- Navigation Links -->
         <nav class="hidden gap-6 text-sm font-medium text-gray-700 md:flex">
-
+            <a href="{{ route('dashboard') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('dashboard') ? 'text-indigo-600 font-semibold' : '' }}">
+                Tableau de bord
+            </a>
             <a href="{{ route('companies.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('companies.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Entreprises
             </a>
@@ -17,6 +19,9 @@
             </a>
             <a href="{{ route('interventions.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('interventions.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Interventions
+            </a>
+            <a href="{{ route('tags.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('tags.*') ? 'text-indigo-600 font-semibold' : '' }}">
+                Tags
             </a>
         </nav>
 
@@ -69,6 +74,9 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-200 bg-gray-50">
         <div class="px-6 py-4 space-y-3">
+            <a href="{{ route('dashboard') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('dashboard') ? 'text-indigo-600 font-semibold' : '' }}">
+                Tableau de bord
+            </a>
             <a href="{{ route('companies.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('companies.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Entreprises
             </a>
@@ -77,6 +85,9 @@
             </a>
             <a href="{{ route('interventions.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('interventions.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Interventions
+            </a>
+            <a href="{{ route('tags.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('tags.*') ? 'text-indigo-600 font-semibold' : '' }}">
+                Tags
             </a>
         </div>
 

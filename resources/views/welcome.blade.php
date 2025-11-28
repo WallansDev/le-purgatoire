@@ -17,6 +17,7 @@
                         <span>{{ config('app.name', 'Backoffice') }}</span>
                     </a>
                     <nav class="hidden gap-6 text-sm font-medium text-slate-600 dark:text-slate-200 md:flex">
+                        <a href="{{ route('dashboard') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Tableau de bord</a>
                         <a href="{{ route('companies.index') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Entreprises</a>
                         <a href="{{ route('technicians.index') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Techniciens</a>
                         <a href="{{ route('interventions.index') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Interventions</a>
@@ -52,7 +53,7 @@
                         </p>
                         <div class="mt-8 flex flex-wrap gap-3">
                             @auth
-                                <a href="{{ route('welcome') }}" class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white shadow hover:bg-indigo-500 transition">
+                                <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white shadow hover:bg-indigo-500 transition">
                                     Ouvrir le tableau de bord
                                 </a>
                                 <a href="{{ route('interventions.create') }}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-6 py-3 font-semibold text-slate-700 hover:border-indigo-500 hover:text-indigo-600 transition dark:border-slate-700 dark:text-slate-100 dark:hover:border-indigo-400">

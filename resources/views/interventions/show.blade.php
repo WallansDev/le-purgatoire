@@ -91,35 +91,29 @@
                         <div>
                             <p class="text-sm text-gray-500">Statut</p>
                             <p class="text-gray-900">
-                                @if($intervention->finished_at)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Terminée
-                                    </span>
-                                @elseif($intervention->started_at)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        En cours
-                                    </span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        Programmée
-                                    </span>
-                                @endif
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Intervention terminée ?</p>
-                            <p class="text-gray-900">
                                 @if($intervention->is_completed)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Oui
+                                        Complète
                                     </span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Non
+                                        Non terminée
                                     </span>
                                 @endif
                             </p>
                         </div>
+                        @if($intervention->tags->isNotEmpty())
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-500">Tags</p>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    @foreach($intervention->tags as $tag)
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border" style="border-color: {{ $tag->color ?? '#c7d2fe' }}; color: {{ $tag->color ?? '#4f46e5' }}">
+                                            {{ $tag->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     @if($intervention->description)
