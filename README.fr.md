@@ -7,7 +7,7 @@
 
 ### 🌐 Lire dans d'autres langues
 
-[**Français**](README.fr.md)
+[**English**](README.md)
 <br><br>
 
 ## 🎯 Objectif

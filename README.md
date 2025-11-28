@@ -12,117 +12,57 @@
 
 ## 🎯 Objective
 
-Web application for managing interventions, allowing you to reference:
+Web application for managing interventions that allows tracking:
 
--   Service providers
+-   Service provider companies
 -   Technicians
--   Planned, ongoing, or completed interventi# 2. Configurer l'environnement
-    cp .env.example .env # Configurer le .env
-    php artisan key:generate
+-   Planned, in progress, or completed interventions
 
-# 4. Exécuter les migrations et seeders
-
-php artisan migrate --seed
-
-# 5. Démarrer les serveurs
-
-npm run serve
-
-# Ou séparément :
-
-php artisan serve #(dans un terminal)
-npm run dev #(dans un autre terminal)
-
-````
-
-L'application sera accessible sur **http://localhost:8000**
-
-### Prérequis
-
--   **PHP** 8.2 ou supérieur
--   **Composer** (gestionnaire de dépendances PHP)
--   **Node.js** 18+ et **npm**
--   **MySQL** (ou autre)
-
-## ✅ Tests unitaires
-
-```bash
-php artisan test
-````
-
-## 📝 Commandes utiles
-
-```bash
-# Rebuild des assets frontend
-npm run build
-
-# Nettoyer le cache
-php artisan cache:clear
-php artisan config:clear
-php artisan view:clear
-
-# Recréer la base de données
-php artisan migrate:fresh --seed
-```
-
-## 🧑‍💻 Contribution
-
-1. Forker le dépôt
-2. Créer une branche (`git checkout -b feature/ma-feature`)
-3. Commiter (`git commit -m "Ajout ma feature"`)
-4. Pousser (`git push origin feature/ma-feature`)
-5. Ouvrir une Pull Request
-
-## 📄 Licence
-
-Pour l'instant <i>Le Purgatoire</i> est un projet en open-source. N'hésitez pas à y contribuer.
-ons
-
-The interface includes a dashboard rich in statistics, such as the top 10 best technicians, delays, interventions to be completed, and those not yet rated.
+The interface includes a dashboard rich in statistics, such as the top 10 best technicians, delays, interventions to complete, and those not yet rated.
 <br><br>
 
-## ✨ Main features
+## ✨ Main Features
 
--   **Company & technician database**: contact details, overall rating, punctuality rating
--   **Service call management**: comprehensive tracking (scheduling, status, progress, rating)
--   **Dashboard**:
-    -   Top 10 best technicians (scoring based on number of jobs and punctuality)
-    -   Jobs to be completed or not started
-    -   Rating and feedback per job
--   **Advanced statistics**: summary views to help with prioritization and service quality
--   **Clear interface**: structured navigation and quick access to frequent actions
+-   **Company & technician directory** : contact information, overall rating, punctuality rating
+-   **Intervention management** : complete tracking (planning, status, progress, rating)
+-   **Dashboard** :
+    -   Top 10 best technicians (Scoring based on number of interventions and punctuality)
+    -   Interventions to finalize or not yet started
+    -   Rating and feedback per intervention
+-   **Advanced statistics** : summary views to help with prioritization and service quality
+-   **Clear interface** : structured navigation and quick access to frequent actions
     <br><br>
 
-## 🧱 Architecture & stack (suggestion)
+## 🧱 Architecture & Stack
 
--   Backend framework: Laravel 12 / PHP 8.2+
--   Database: MySQL (default, easy to migrate to PostgreSQL or other)
--   Build tool: Vite
--   Admin panel: Filament 4.2
--   Authentication: Laravel Breeze  
-     <br>
+-   Backend framework : Laravel 12 / PHP 8.2+
+-   Database : MySQL (default, easy to migrate to PostgreSQL or others)
+-   Build tool : Vite
+-   Admin panel : Filament 4.2
+-   Authentication : Laravel Breeze  
+    <br>
 
-## 🚀 Quick start
+## 🚀 Quick Start
 
-### Manual installation
+### Manual Installation
 
 ```bash
 # 1. Install dependencies
 composer install
 npm install
 
-# 2. Configure the environment
-cp .env.example .env # Configure .env
+# 2. Configure environment
+cp .env.example .env # Configure the .env file
 php artisan key:generate
 
 # 4. Run migrations and seeders
 php artisan migrate --seed
 
-# 5. Start the servers
+# 5. Start servers
 npm run serve
 # Or separately:
-php artisan serve    #(in a terminal)
-npm run dev          # (in another terminal)
+php artisan serve    #(in one terminal)
+npm run dev          #(in another terminal)
 ```
 
 The application will be accessible at **http://localhost:8000**
@@ -134,13 +74,13 @@ The application will be accessible at **http://localhost:8000**
 -   **Node.js** 18+ and **npm**
 -   **MySQL** (or other)
 
-## ✅ Unit tests
+## ✅ Unit Tests
 
 ```bash
 php artisan test
 ```
 
-## 📝 Useful commands
+## 📝 Useful Commands
 
 ```bash
 # Rebuild frontend assets
@@ -155,11 +95,11 @@ php artisan view:clear
 php artisan migrate:fresh --seed
 ```
 
-## 🧑‍💻 Contribution
+## 🧑‍💻 Contributing
 
 1. Fork the repository
 2. Create a branch (`git checkout -b feature/my-feature`)
-3. Commit (`git commit -m “Add my feature”`)
+3. Commit (`git commit -m "Add my feature"`)
 4. Push (`git push origin feature/my-feature`)
 5. Open a Pull Request
 
