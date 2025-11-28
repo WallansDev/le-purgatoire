@@ -28,8 +28,6 @@ L’interface inclut un tableau de bord riche en statistiques, comme le top 10 d
 
 ## 🧱 Architecture & stack (suggestion)
 
-_(Adapter selon la réelle stack du projet si besoin)_
-
 -   Framework backend : Laravel 12 / PHP 8.2+
 -   Base de données : MySQL (par défaut, facile à migrer vers PostgreSQL ou autre)
 -   Build tool : Vite
