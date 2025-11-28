@@ -20,6 +20,14 @@
             <a href="{{ route('interventions.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('interventions.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Interventions
             </a>
+            <a href="{{ route('tags.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('tags.*') ? 'text-indigo-600 font-semibold' : '' }}">
+                Tags
+            </a>
+            @if(Auth::user()?->isAdmin())
+                <a href="{{ route('users.index') }}" class="hover:text-indigo-600 transition {{ request()->routeIs('users.*') ? 'text-indigo-600 font-semibold' : '' }}">
+                    Utilisateurs
+                </a>
+            @endif
         </nav>
 
         <!-- User Menu -->
@@ -29,7 +37,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-800 hover:text-indigo-600 focus:outline-none transition">
-                            <div>{{ Auth::user()->name }}</div>
+                            <div>{{ Auth::user()->full_name ?? Auth::user()->name }}</div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -40,10 +48,6 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('tags.index')">
-                            {{ __('Tags') }}
-                        </x-dropdown-link>
-                        <hr>
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -91,21 +95,23 @@
             <a href="{{ route('tags.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('tags.*') ? 'text-indigo-600 font-semibold' : '' }}">
                 Tags
             </a>
+            @if(Auth::user()?->isAdmin())
+                <a href="{{ route('users.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition {{ request()->routeIs('users.*') ? 'text-indigo-600 font-semibold' : '' }}">
+                    Utilisateurs
+                </a>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
         <div class="px-6 py-4 border-t border-gray-200">
             <div class="mb-3">
-                <div class="font-medium text-base text-gray-900">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base text-gray-900">{{ Auth::user()->full_name ?? Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-gray-600">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="space-y-2">
                 <a href="{{ route('profile.edit') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
                     {{ __('Profile') }}
-                </a>
-                <a href="{{ route(name: 'tags.index') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
-                    {{ __('Tags') }}
                 </a>
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

@@ -19,8 +19,18 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
+        'email_verified_at',
         'password',
+        'is_admin',
+        'must_change_password',
+    ];
+
+    protected $appends = [
+        'full_name',
     ];
 
     /**
@@ -43,6 +53,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        $fullName = trim("{$this->first_name} {$this->last_name}");
+
+        return $fullName !== '' ? $fullName : $this->name;
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
     }
 }
