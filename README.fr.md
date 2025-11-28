@@ -3,7 +3,7 @@
 **Auteur :** Timothé VAQUIÉ (Wallans)  
 **Version :** 1.0
 
-<br><br>
+<br>
 
 ### 🌐 Lire dans d'autres langues
 
