@@ -61,6 +61,9 @@ class TechnicianController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        // Gérer le cas où la checkbox n'est pas cochée (non envoyée dans la requête)
+        $validated['is_active'] = $request->boolean('is_active');
+
         Technician::create($validated);
 
         return redirect()->route('technicians.index')
@@ -108,6 +111,9 @@ class TechnicianController extends Controller
             'email' => 'nullable|email|max:255',
             'is_active' => 'boolean',
         ]);
+
+        // Gérer le cas où la checkbox n'est pas cochée (non envoyée dans la requête)
+        $validated['is_active'] = $request->boolean('is_active');
 
         $technician->update($validated);
 
