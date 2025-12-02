@@ -20,8 +20,11 @@ Route::post('setup-owner', [OwnerSetupController::class, 'store'])
     ->name('owner.setup.store');
 
 Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/force-password', [ForcedPasswordController::class, 'edit'])->name('password.force.edit');

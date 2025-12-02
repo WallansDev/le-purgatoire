@@ -1,7 +1,7 @@
 <header x-data="{ open: false }" class="bg-white shadow-sm border-b border-gray-200">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <!-- Logo -->
-        <a href="{{ route('welcome') }}" class="flex items-center gap-2 text-lg font-semibold text-gray-900">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <x-application-logo class="text-indigo-600 w-[35.2px] h-[35.2px]" />
             <span>{{ config('app.name', 'Backoffice') }}</span>
         </a>
