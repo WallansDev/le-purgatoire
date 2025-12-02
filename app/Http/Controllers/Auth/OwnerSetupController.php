@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\UserCreatedMail;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -56,9 +58,18 @@ class OwnerSetupController extends Controller
             'password' => Hash::make($request->password),
             'is_admin' => true,
             'must_change_password' => false,
+            'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));
+
+        // Envoyer l'email de bienvenue (sans mot de passe temporaire car c'est le propriétaire)
+        try {
+            Mail::to($user->email)->send(new UserCreatedMail($user));
+        } catch (\Exception $e) {
+            // En cas d'erreur d'envoi d'email, on continue quand même
+            // Le compte est créé, seul l'email n'a pas pu être envoyé
+        }
 
         Auth::login($user);
 

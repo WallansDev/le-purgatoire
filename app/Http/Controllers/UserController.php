@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserCreatedMail;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -48,6 +50,9 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // Sauvegarder le mot de passe en clair temporairement pour l'envoyer par email
+        $temporaryPassword = $validated['password'];
+
         $user = User::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
@@ -60,9 +65,17 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
+        // Envoyer l'email de bienvenue avec le mot de passe temporaire
+        try {
+            Mail::to($user->email)->send(new UserCreatedMail($user, $temporaryPassword));
+        } catch (\Exception $e) {
+            // En cas d'erreur d'envoi d'email, on continue quand même
+            // L'utilisateur est créé, seul l'email n'a pas pu être envoyé
+        }
+
         return redirect()
             ->route('users.index')
-            ->with('success', "Utilisateur {$user->full_name} créé avec succès. Il devra changer son mot de passe à la première connexion.");
+            ->with('success', "Utilisateur {$user->full_name} créé avec succès. Un email contenant ses identifiants a été envoyé à son adresse.");
     }
 
     public function edit(User $user): View

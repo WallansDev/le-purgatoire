@@ -5,6 +5,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForcedPasswordController;
 use App\Http\Controllers\InterventionController;
+use App\Http\Controllers\MailTestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TechnicianController;
@@ -29,9 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('password.changed')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
         Route::resource('companies', CompanyController::class);
         Route::resource('technicians', TechnicianController::class);
