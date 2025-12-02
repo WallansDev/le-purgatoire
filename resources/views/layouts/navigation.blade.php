@@ -49,7 +49,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profil') }}
+                            <i class="fa-solid fa-user"></i> {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -58,7 +58,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Se déconnecter') }}
+                                <i class="fa-solid fa-door-open"></i> {{ __('Se déconnecter') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -111,7 +111,7 @@
 
             <div class="space-y-2">
                 <a href="{{ route('profile.edit') }}" class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
-                    {{ __('Profile') }}
+                    <i class="fa-solid fa-user"></i> {{ __('Profil') }}
                 </a>
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
@@ -120,7 +120,7 @@
                             onclick="event.preventDefault();
                                         this.closest('form').submit();"
                             class="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
-                        {{ __('Log Out') }}
+                            <i class="fa-solid fa-door-open"></i> {{ __('Se déconnecter') }}
                     </a>
                 </form>
             </div>
