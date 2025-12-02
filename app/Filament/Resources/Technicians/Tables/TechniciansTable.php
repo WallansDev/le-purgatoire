@@ -34,7 +34,7 @@ class TechniciansTable
                     ->toggleable(),
                 TextColumn::make('average_rating')
                     ->label('Note moy.')
-                    ->state(fn (Technician $record) => $record->average_rating ? number_format($record->average_rating, 2) : 'N/A')
+                    ->state(fn (Technician $record) => !is_null($record->average_rating) ? number_format($record->average_rating, 2) . '/5' : '-')
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('punctuality_rate')

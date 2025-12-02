@@ -89,7 +89,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-500">
-                                                @if($technician->average_rating)
+                                                @if(!is_null($technician->average_rating))
                                                     {{ number_format($technician->average_rating, 1) }}/5
                                                 @else
                                                     -

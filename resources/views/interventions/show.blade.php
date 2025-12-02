@@ -61,7 +61,7 @@
                         <div>
                             <p class="text-sm text-gray-500">Note</p>
                             <p class="text-gray-900">
-                                @if($intervention->note)
+                                @if(!is_null($intervention->note))
                                     {{ $intervention->note }}/5
                                 @else
                                     -

@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\Interventions\Schemas;
 
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class InterventionForm
@@ -49,6 +52,15 @@ class InterventionForm
                     ->columns(2),
                 Section::make('Qualité')
                     ->schema([
+                        Checkbox::make('no_note')
+                            ->label('Non noté')
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, $state) {
+                                if ($state) {
+                                    $set('note', null);
+                                }
+                            }),
                         Select::make('note')
                             ->label('Note')
                             ->options([
@@ -58,7 +70,9 @@ class InterventionForm
                                 4 => '4',
                                 5 => '5',
                             ])
-                            ->native(false),
+                            ->native(false)
+                            ->disabled(fn (Get $get): bool => $get('no_note') === true)
+                            ->visible(fn (Get $get): bool => ! $get('no_note')),
                         TextInput::make('delay_minutes')
                             ->label('Retard (min)')
                             ->numeric()

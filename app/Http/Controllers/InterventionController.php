@@ -76,6 +76,7 @@ class InterventionController extends Controller
             'description' => 'nullable|string',
             'address' => 'nullable|string',
             'note' => 'nullable|integer|min:0|max:5',
+            'no_note' => 'nullable|boolean',
             'is_completed' => 'nullable|boolean',
             'non_completion_reason' => 'nullable|string|required_if:is_completed,false',
             'notes' => 'nullable|string',
@@ -83,6 +84,11 @@ class InterventionController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
+
+        // Si "Non noté" est coché, mettre note à NULL
+        if ($request->boolean('no_note')) {
+            $validated['note'] = null;
+        }
 
         $intervention = Intervention::create($validated);
 
@@ -131,6 +137,7 @@ class InterventionController extends Controller
             'description' => 'nullable|string',
             'address' => 'nullable|string',
             'note' => 'nullable|integer|min:0|max:5',
+            'no_note' => 'nullable|boolean',
             'is_completed' => 'nullable|boolean',
             'non_completion_reason' => 'nullable|string|required_if:is_completed,false|required_if:is_completed,0',
             'notes' => 'nullable|string',
@@ -143,6 +150,11 @@ class InterventionController extends Controller
 
         if ($validated['is_completed']) {
             $validated['non_completion_reason'] = null;
+        }
+
+        // Si "Non noté" est coché, mettre note à NULL
+        if ($request->boolean('no_note')) {
+            $validated['note'] = null;
         }
 
         $intervention->update($validated);

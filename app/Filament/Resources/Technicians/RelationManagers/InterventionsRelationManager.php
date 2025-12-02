@@ -76,6 +76,7 @@ class InterventionsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('note')
                     ->label('Note')
+                    ->formatStateUsing(fn ($state) => $state !== null ? $state . '/5' : '-')
                     ->sortable(),
                 IconColumn::make('was_late')
                     ->label('Retard ?')

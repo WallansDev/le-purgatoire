@@ -56,6 +56,12 @@
 
                             <div>
                                 <x-input-label for="note" :value="__('Note (0-5)')" />
+                                <div class="mt-2">
+                                    <label class="inline-flex items-center mb-2">
+                                        <input type="checkbox" id="no_note" name="no_note" value="1" {{ old('no_note') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-600">Non noté</span>
+                                    </label>
+                                </div>
                                 <x-text-input id="note" class="block mt-1 w-full" type="number" name="note" :value="old('note')" min="0" max="5" />
                                 <x-input-error :messages="$errors->get('note')" class="mt-2" />
                             </div>
@@ -134,6 +140,22 @@
                                 if (checkbox && reasonField) {
                                     syncReasonField();
                                     checkbox.addEventListener('change', syncReasonField);
+                                }
+
+                                // Gérer la case "Non noté"
+                                const noNoteCheckbox = document.getElementById('no_note');
+                                const noteInput = document.getElementById('note');
+                                if (noNoteCheckbox && noteInput) {
+                                    const syncNoteField = () => {
+                                        if (noNoteCheckbox.checked) {
+                                            noteInput.disabled = true;
+                                            noteInput.value = '';
+                                        } else {
+                                            noteInput.disabled = false;
+                                        }
+                                    };
+                                    syncNoteField();
+                                    noNoteCheckbox.addEventListener('change', syncNoteField);
                                 }
 
                                 const tagSelect = document.getElementById('tags');

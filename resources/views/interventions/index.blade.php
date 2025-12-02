@@ -172,7 +172,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-500">
-                                                @if($intervention->note !== null)
+                                                @if(!is_null($intervention->note))
                                                     {{ $intervention->note }}/5
                                                 @else
                                                     -

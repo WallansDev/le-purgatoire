@@ -48,7 +48,7 @@
                         <div>
                             <p class="text-sm text-gray-500">Note moyenne des interventions</p>
                             <p class="text-gray-900">
-                                @if ($technician->average_rating)
+                                @if (!is_null($technician->average_rating))
                                     {{ number_format($technician->average_rating, 1) }}/5
                                 @else
                                     -
@@ -129,7 +129,7 @@
                                                 {{ $intervention->finished_at?->format('d/m/Y H:i') ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                @if ($intervention->note)
+                                                @if (!is_null($intervention->note))
                                                     {{ $intervention->note }}/5
                                                 @else
                                                     -

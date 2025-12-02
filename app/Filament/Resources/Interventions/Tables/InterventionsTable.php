@@ -43,8 +43,9 @@ class InterventionsTable
                 TextColumn::make('delay_minutes')
                     ->label('Retard (min)')
                     ->sortable(),
-                TextColumn::make('rating')
+                TextColumn::make('note')
                     ->label('Note')
+                    ->formatStateUsing(fn ($state) => $state !== null ? $state . '/5' : '-')
                     ->sortable(),
                 IconColumn::make('was_late')
                     ->label('Retard ?')
@@ -72,13 +73,14 @@ class InterventionsTable
                     ->relationship('technician', 'full_name')
                     ->searchable()
                     ->preload(),
-                SelectFilter::make('rating')
+                SelectFilter::make('note')
                     ->options([
                         5 => '5',
                         4 => '4',
                         3 => '3',
                         2 => '2',
                         1 => '1',
+                        0 => '0',
                     ])
                     ->label('Note'),
                 TernaryFilter::make('was_late')->label('Retard'),
