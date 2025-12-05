@@ -68,7 +68,7 @@ class InterventionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'technician_id' => 'required|exists:technicians,id',
+            'technician_id' => 'nullable|exists:technicians,id',
             'scheduled_at' => 'required|date',
             'started_at' => 'nullable|date',
             'finished_at' => 'nullable|date|after_or_equal:started_at',
@@ -135,7 +135,7 @@ class InterventionController extends Controller
     public function update(Request $request, Intervention $intervention): RedirectResponse
     {
         $validated = $request->validate([
-            'technician_id' => 'required|exists:technicians,id',
+            'technician_id' => 'nullable|exists:technicians,id',
             'scheduled_at' => 'required|date',
             'started_at' => 'nullable|date',
             'finished_at' => 'nullable|date|after_or_equal:started_at',

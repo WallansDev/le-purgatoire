@@ -26,7 +26,7 @@ class InterventionForm
                             ->relationship('technician', 'full_name')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->placeholder('Non assigné'),
                         DateTimePicker::make('scheduled_at')
                             ->label('Date prévue')
                             ->seconds(false)

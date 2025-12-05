@@ -18,9 +18,9 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <x-input-label for="technician_id" :value="__('Technicien *')" />
-                                <select id="technician_id" name="technician_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                    <option value="">Sélectionner un technicien</option>
+                                <x-input-label for="technician_id" :value="__('Technicien')" />
+                                <select id="technician_id" name="technician_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    <option value="">Aucun technicien</option>
                                     @foreach($technicians as $technician)
                                         <option value="{{ $technician->id }}" {{ old('technician_id') == $technician->id ? 'selected' : '' }}>
                                             {{ $technician->full_name }} - {{ $technician->company->name }}
