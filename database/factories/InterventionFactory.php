@@ -32,6 +32,7 @@ class InterventionFactory extends Factory
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(),
             'note' => $this->faker->optional(0.7)->numberBetween(1, 5),
+            'service_note' => $this->faker->optional(0.7)->numberBetween(0, 5),
             'delay_minutes' => $delay,
             'was_late' => $delay > 0,
         ];

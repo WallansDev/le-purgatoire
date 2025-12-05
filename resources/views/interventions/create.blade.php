@@ -66,6 +66,18 @@
                                 <x-input-error :messages="$errors->get('note')" class="mt-2" />
                             </div>
 
+                            <div>
+                                <x-input-label for="service_note" :value="__('Note service technique (0-5)')" />
+                                <div class="mt-2">
+                                    <label class="inline-flex items-center mb-2">
+                                        <input type="checkbox" id="no_service_note" name="no_service_note" value="1" {{ old('no_service_note') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-600">Non notée</span>
+                                    </label>
+                                </div>
+                                <x-text-input id="service_note" class="block mt-1 w-full" type="number" name="service_note" :value="old('service_note')" min="0" max="5" />
+                                <x-input-error :messages="$errors->get('service_note')" class="mt-2" />
+                            </div>
+
                             <div class="md:col-span-2">
                                 <x-input-label for="description" :value="__('Description')" />
                                 <textarea id="description" name="description" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
@@ -156,6 +168,21 @@
                                     };
                                     syncNoteField();
                                     noNoteCheckbox.addEventListener('change', syncNoteField);
+                                }
+
+                                const noServiceNoteCheckbox = document.getElementById('no_service_note');
+                                const serviceNoteInput = document.getElementById('service_note');
+                                if (noServiceNoteCheckbox && serviceNoteInput) {
+                                    const syncServiceNoteField = () => {
+                                        if (noServiceNoteCheckbox.checked) {
+                                            serviceNoteInput.disabled = true;
+                                            serviceNoteInput.value = '';
+                                        } else {
+                                            serviceNoteInput.disabled = false;
+                                        }
+                                    };
+                                    syncServiceNoteField();
+                                    noServiceNoteCheckbox.addEventListener('change', syncServiceNoteField);
                                 }
 
                                 const tagSelect = document.getElementById('tags');

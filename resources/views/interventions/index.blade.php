@@ -86,6 +86,9 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Note
                                     </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Note service
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 shadow-inner">
                                         Actions
                                     </th>
@@ -174,6 +177,15 @@
                                             <div class="text-sm text-gray-500">
                                                 @if(!is_null($intervention->note))
                                                     {{ $intervention->note }}/5
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-500">
+                                                @if(!is_null($intervention->service_note))
+                                                    {{ $intervention->service_note }}/5
                                                 @else
                                                     -
                                                 @endif

@@ -68,6 +68,16 @@
                                 @endif
                             </p>
                         </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Note service</p>
+                            <p class="text-gray-900">
+                                @if(!is_null($intervention->service_note))
+                                    {{ $intervention->service_note }}/5
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
                         @if($intervention->address)
                         <div class="md:col-span-2">
                             <p class="text-sm text-gray-500">Adresse</p>

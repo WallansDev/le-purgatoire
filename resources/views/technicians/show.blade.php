@@ -106,6 +106,10 @@
                                         </th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Note service
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Retard
                                         </th>
                                     </tr>
@@ -131,6 +135,13 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 @if (!is_null($intervention->note))
                                                     {{ $intervention->note }}/5
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                @if (!is_null($intervention->service_note))
+                                                    {{ $intervention->service_note }}/5
                                                 @else
                                                     -
                                                 @endif

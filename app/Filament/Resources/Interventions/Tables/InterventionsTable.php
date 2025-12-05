@@ -47,6 +47,10 @@ class InterventionsTable
                     ->label('Note')
                     ->formatStateUsing(fn ($state) => $state !== null ? $state . '/5' : '-')
                     ->sortable(),
+                TextColumn::make('service_note')
+                    ->label('Note service')
+                    ->formatStateUsing(fn ($state) => $state !== null ? $state . '/5' : '-')
+                    ->sortable(),
                 IconColumn::make('was_late')
                     ->label('Retard ?')
                     ->boolean(),
@@ -83,6 +87,16 @@ class InterventionsTable
                         0 => '0',
                     ])
                     ->label('Note'),
+                SelectFilter::make('service_note')
+                    ->options([
+                        5 => '5',
+                        4 => '4',
+                        3 => '3',
+                        2 => '2',
+                        1 => '1',
+                        0 => '0',
+                    ])
+                    ->label('Note service'),
                 TernaryFilter::make('was_late')->label('Retard'),
             ])
             ->recordActions([
