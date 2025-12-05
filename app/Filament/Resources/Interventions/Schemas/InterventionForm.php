@@ -23,7 +23,14 @@ class InterventionForm
                     ->schema([
                         Select::make('technician_id')
                             ->label('Technicien')
-                            ->relationship('technician', 'full_name')
+                            ->relationship(
+                                'technician',
+                                'full_name',
+                                fn ($query) => $query
+                                    ->where('is_active', true)
+                                    ->orderBy('last_name')
+                                    ->orderBy('first_name')
+                            )
                             ->searchable()
                             ->preload()
                             ->placeholder('Non assigné'),
