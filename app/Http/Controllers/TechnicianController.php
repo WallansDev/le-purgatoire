@@ -81,8 +81,8 @@ class TechnicianController extends Controller
                 $query->latest()->limit(10);
             },
         ])->loadAvg(
-            ['interventions as average_rating' => fn ($query) => $query->whereNotNull('note')],
-            'note',
+            ['interventions as average_rating' => fn ($query) => $query->whereNotNull('service_note')],
+            'service_note',
         );
         
         return view('technicians.show', compact('technician'));

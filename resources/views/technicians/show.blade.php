@@ -46,7 +46,7 @@
                             <p class="text-gray-900">{{ $technician->phone ?? '-' }}</p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">Note moyenne des interventions</p>
+                            <p class="text-sm text-gray-500">Note service moyenne</p>
                             <p class="text-gray-900">
                                 @if (!is_null($technician->average_rating))
                                     {{ number_format($technician->average_rating, 1) }}/5
@@ -73,7 +73,8 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold">Interventions ({{ $technician->interventions->count() }})</h3>
+                        <h3 class="text-lg font-semibold">Interventions ({{ $technician->interventions->count() }})
+                        </h3>
                         <a href="{{ route('interventions.create') }}"
                             class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
                             Ajouter une intervention

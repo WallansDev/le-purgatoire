@@ -42,7 +42,7 @@ class DashboardController extends Controller
 
         $topTechnicians = Technician::with('company')
             ->withCount('interventions')
-            ->withAvg('interventions as avg_note', 'note')
+            ->withAvg('interventions as avg_service_note', 'service_note')
             ->withCount([
                 'interventions as on_time_count' => fn ($q) => $q->where('was_late', false),
             ])
@@ -50,7 +50,7 @@ class DashboardController extends Controller
             ->map(function (Technician $technician) {
                 $interventionCount = $technician->interventions_count;
                 $volumeScore = min($interventionCount, 50) / 50; // cap à 50 interventions
-                $averageNote = (float) ($technician->avg_note ?? 0);
+                $averageNote = (float) ($technician->avg_service_note ?? 0);
                 $punctualityRate = $interventionCount > 0 ? $technician->on_time_count / $interventionCount : 1;
 
                 $punctualityPenalty = $punctualityRate < 0.75
