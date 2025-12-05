@@ -55,6 +55,7 @@ class InterventionController extends Controller
     {
         $technicians = Technician::where('is_active', true)
             ->with('company')
+            ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
         $tags = Tag::orderBy('name')->get();
@@ -121,6 +122,7 @@ class InterventionController extends Controller
     {
         $technicians = Technician::where('is_active', true)
             ->with('company')
+            ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
         
