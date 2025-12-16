@@ -42,7 +42,10 @@ class Technician extends Model
 
     public function scopeWithKpis(Builder $query): Builder
     {
-        return $query->withAvg(['interventions as average_rating' => fn ($q) => $q->whereNotNull('note')], 'note')
+        return $query->withAvg(
+            ['interventions as average_rating' => fn ($q) => $q->whereNotNull('service_note')],
+            'service_note'
+        )
             ->withCount([
                 'interventions',
                 'interventions as punctual_interventions_count' => fn ($q) => $q->where('was_late', false),

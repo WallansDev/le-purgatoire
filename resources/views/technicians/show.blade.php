@@ -46,7 +46,7 @@
                             <p class="text-gray-900">{{ $technician->phone ?? '-' }}</p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">Note moyenne des interventions</p>
+                            <p class="text-sm text-gray-500">Note service moyenne</p>
                             <p class="text-gray-900">
                                 @if (!is_null($technician->average_rating))
                                     {{ number_format($technician->average_rating, 1) }}/5
