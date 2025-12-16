@@ -23,6 +23,7 @@ class Intervention extends Model
         'description',
         'address',
         'note',
+        'service_note',
         'delay_minutes',
         'was_late',
         'is_completed',
@@ -36,6 +37,7 @@ class Intervention extends Model
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
         'note' => 'integer',
+        'service_note' => 'integer',
         'was_late' => 'boolean',
         'is_completed' => 'boolean',
     ];

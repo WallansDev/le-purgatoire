@@ -64,6 +64,7 @@ class InterventionForm
                         Select::make('note')
                             ->label('Note')
                             ->options([
+                                0 => '0',
                                 1 => '1',
                                 2 => '2',
                                 3 => '3',
@@ -73,6 +74,28 @@ class InterventionForm
                             ->native(false)
                             ->disabled(fn (Get $get): bool => $get('no_note') === true)
                             ->visible(fn (Get $get): bool => ! $get('no_note')),
+                        Checkbox::make('no_service_note')
+                            ->label('Non notée (service technique)')
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, $state) {
+                                if ($state) {
+                                    $set('service_note', null);
+                                }
+                            }),
+                        Select::make('service_note')
+                            ->label('Note service technique')
+                            ->options([
+                                0 => '0',
+                                1 => '1',
+                                2 => '2',
+                                3 => '3',
+                                4 => '4',
+                                5 => '5',
+                            ])
+                            ->native(false)
+                            ->disabled(fn (Get $get): bool => $get('no_service_note') === true)
+                            ->visible(fn (Get $get): bool => ! $get('no_service_note')),
                         TextInput::make('delay_minutes')
                             ->label('Retard (min)')
                             ->numeric()

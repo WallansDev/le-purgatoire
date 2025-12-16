@@ -73,7 +73,8 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold">Interventions ({{ $technician->interventions->count() }})</h3>
+                        <h3 class="text-lg font-semibold">Interventions ({{ $technician->interventions->count() }})
+                        </h3>
                         <a href="{{ route('interventions.create') }}"
                             class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
                             Ajouter une intervention
@@ -106,6 +107,10 @@
                                         </th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Note service
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Retard
                                         </th>
                                     </tr>
@@ -131,6 +136,13 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 @if (!is_null($intervention->note))
                                                     {{ $intervention->note }}/5
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                @if (!is_null($intervention->service_note))
+                                                    {{ $intervention->service_note }}/5
                                                 @else
                                                     -
                                                 @endif
