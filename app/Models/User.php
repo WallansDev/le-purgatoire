@@ -111,47 +111,29 @@ class User extends Authenticatable
 
     /**
      * Check if user can read in a specific group (via group permissions).
+     * @deprecated Use canReadGroups() instead
      */
     public function canReadGroup(Group $group): bool
     {
-        if ($this->isOwner()) {
-            return true;
-        }
-        
-        return $this->groups()
-            ->where('groups.id', $group->id)
-            ->where('groups.can_read', true)
-            ->exists();
+        return $this->canReadGroups();
     }
 
     /**
      * Check if user can write in a specific group (via group permissions).
+     * @deprecated Use canWriteGroups() instead
      */
     public function canWriteGroup(Group $group): bool
     {
-        if ($this->isOwner()) {
-            return true;
-        }
-        
-        return $this->groups()
-            ->where('groups.id', $group->id)
-            ->where('groups.can_write', true)
-            ->exists();
+        return $this->canWriteGroups();
     }
 
     /**
      * Check if user can delete in a specific group (via group permissions).
+     * @deprecated Use canDeleteGroups() instead
      */
     public function canDeleteInGroup(Group $group): bool
     {
-        if ($this->isOwner()) {
-            return true;
-        }
-        
-        return $this->groups()
-            ->where('groups.id', $group->id)
-            ->where('groups.can_delete', true)
-            ->exists();
+        return $this->canDeleteGroups();
     }
     
     /**
@@ -224,5 +206,215 @@ class User extends Authenticatable
         return $this->groups()
             ->where('groups.id', $group->id)
             ->first();
+    }
+
+    /**
+     * Check if user can read Companies.
+     */
+    public function canReadCompanies(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.companies_read', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can write/modify Companies.
+     */
+    public function canWriteCompanies(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.companies_write', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can delete Companies.
+     */
+    public function canDeleteCompanies(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.companies_delete', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can read Technicians.
+     */
+    public function canReadTechnicians(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.technicians_read', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can write/modify Technicians.
+     */
+    public function canWriteTechnicians(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.technicians_write', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can delete Technicians.
+     */
+    public function canDeleteTechnicians(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.technicians_delete', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can read Interventions.
+     */
+    public function canReadInterventions(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.interventions_read', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can write/modify Interventions.
+     */
+    public function canWriteInterventions(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.interventions_write', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can delete Interventions.
+     */
+    public function canDeleteInterventions(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.interventions_delete', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can read Groups.
+     */
+    public function canReadGroups(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.groups_read', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can write/modify Groups.
+     */
+    public function canWriteGroups(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.groups_write', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can delete Groups.
+     */
+    public function canDeleteGroups(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.groups_delete', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can read Organizations.
+     */
+    public function canReadOrganizations(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.organizations_read', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can write/modify Organizations.
+     */
+    public function canWriteOrganizations(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.organizations_write', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user can delete Organizations.
+     */
+    public function canDeleteOrganizations(): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+        
+        return $this->groups()
+            ->where('groups.organizations_delete', true)
+            ->exists();
     }
 }

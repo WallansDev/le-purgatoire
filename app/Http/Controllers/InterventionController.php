@@ -16,6 +16,13 @@ class InterventionController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les interventions.');
+        }
+        
         $query = Intervention::with(['technician.company', 'tags']);
         
         // Recherche par technicien, client (title) ou date
@@ -53,6 +60,13 @@ class InterventionController extends Controller
      */
     public function create(): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des interventions.');
+        }
+        
         $technicians = Technician::where('is_active', true)
             ->with('company')
             ->orderBy('last_name')
@@ -68,6 +82,13 @@ class InterventionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des interventions.');
+        }
+        
         $validated = $request->validate([
             'technician_id' => 'nullable|exists:technicians,id',
             'scheduled_at' => 'required|date',
@@ -110,6 +131,13 @@ class InterventionController extends Controller
      */
     public function show(Intervention $intervention): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les interventions.');
+        }
+        
         $intervention->load('technician.company', 'tags');
         
         return view('interventions.show', compact('intervention'));
@@ -120,6 +148,12 @@ class InterventionController extends Controller
      */
     public function edit(Intervention $intervention): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des interventions.');
+        }
         $technicians = Technician::where('is_active', true)
             ->with('company')
             ->orderBy('last_name')
@@ -136,6 +170,13 @@ class InterventionController extends Controller
      */
     public function update(Request $request, Intervention $intervention): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des interventions.');
+        }
+        
         $validated = $request->validate([
             'technician_id' => 'nullable|exists:technicians,id',
             'scheduled_at' => 'required|date',
@@ -183,6 +224,13 @@ class InterventionController extends Controller
      */
     public function destroy(Intervention $intervention): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de suppression
+        if (!$user->canDeleteInterventions()) {
+            abort(403, 'Vous n\'avez pas la permission de supprimer des interventions.');
+        }
+        
         $intervention->delete();
 
         return redirect()->route('interventions.index')

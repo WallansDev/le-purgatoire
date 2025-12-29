@@ -4,10 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Techniciens') }}
             </h2>
-            <a href="{{ route('technicians.create') }}"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Nouveau technicien
-            </a>
+            @if(auth()->user()->canWriteTechnicians())
+                <a href="{{ route('technicians.create') }}"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Nouveau technicien
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -122,17 +124,23 @@
                                         </td>
                                         <td
                                             class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
-                                            <a href="{{ route('technicians.show', $technician) }}"
-                                                class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
-                                            <a href="{{ route('technicians.edit', $technician) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
-                                            <form action="{{ route('technicians.destroy', $technician) }}"
-                                                method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900"
-                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce technicien ?')">Supprimer</button>
-                                            </form>
+                                            @if(auth()->user()->canReadTechnicians())
+                                                <a href="{{ route('technicians.show', $technician) }}"
+                                                    class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
+                                            @endif
+                                            @if(auth()->user()->canWriteTechnicians())
+                                                <a href="{{ route('technicians.edit', $technician) }}"
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
+                                            @endif
+                                            @if(auth()->user()->canDeleteTechnicians())
+                                                <form action="{{ route('technicians.destroy', $technician) }}"
+                                                    method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900"
+                                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce technicien ?')">Supprimer</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

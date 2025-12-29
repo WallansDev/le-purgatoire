@@ -14,6 +14,13 @@ class CompanyController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les entreprises.');
+        }
+        
         $query = Company::withCount('technicians');
         
         // Recherche par nom ou SIRET
@@ -35,6 +42,13 @@ class CompanyController extends Controller
      */
     public function create(): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture (nécessaire pour créer)
+        if (!$user->canWriteCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des entreprises.');
+        }
+        
         return view('companies.create');
     }
 
@@ -43,6 +57,12 @@ class CompanyController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des entreprises.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'siret' => 'nullable|string|max:14',
@@ -68,6 +88,13 @@ class CompanyController extends Controller
      */
     public function show(Company $company): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les entreprises.');
+        }
+        
         $company->load(['technicians' => function ($query) {
             $query->withCount('interventions')->latest();
         }]);
@@ -80,6 +107,13 @@ class CompanyController extends Controller
      */
     public function edit(Company $company): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture (nécessaire pour modifier)
+        if (!$user->canWriteCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des entreprises.');
+        }
+        
         return view('companies.edit', compact('company'));
     }
 
@@ -88,6 +122,12 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des entreprises.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'siret' => 'nullable|string|max:14',
@@ -113,6 +153,13 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de suppression
+        if (!$user->canDeleteCompanies()) {
+            abort(403, 'Vous n\'avez pas la permission de supprimer des entreprises.');
+        }
+        
         $company->delete();
 
         return redirect()->route('companies.index')

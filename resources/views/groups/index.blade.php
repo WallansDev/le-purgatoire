@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Groupes') }}
             </h2>
-            <a href="{{ route('groups.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Nouveau groupe
-            </a>
+            @if(auth()->user()->canWriteGroups())
+                <a href="{{ route('groups.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Nouveau groupe
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -94,13 +96,19 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
-                                            <a href="{{ route('groups.show', $group) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
-                                            <a href="{{ route('groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
-                                            <form action="{{ route('groups.destroy', $group) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')">Supprimer</button>
-                                            </form>
+                                            @if(auth()->user()->canReadGroups())
+                                                <a href="{{ route('groups.show', $group) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
+                                            @endif
+                                            @if(auth()->user()->canWriteGroups())
+                                                <a href="{{ route('groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
+                                            @endif
+                                            @if(auth()->user()->canDeleteGroups())
+                                                <form action="{{ route('groups.destroy', $group) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')">Supprimer</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

@@ -5,10 +5,12 @@
                 {{ __('Détails du groupe') }}
             </h2>
             <div>
-                <a href="{{ route('groups.edit', $group) }}"
-                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Modifier
-                </a>
+                @if(auth()->user()->canWriteGroups())
+                    <a href="{{ route('groups.edit', $group) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        Modifier
+                    </a>
+                @endif
                 <a href="{{ route('groups.index') }}"
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     Retour
@@ -62,20 +64,52 @@
                         </div>
                         <div class="md:col-span-2">
                             <p class="text-sm text-gray-500 mb-2">Permissions du groupe</p>
-                            <div class="flex gap-2 flex-wrap">
-                                @if($group->can_read)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lecture</span>
-                                @endif
-                                @if($group->can_write)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Écriture</span>
-                                @endif
-                                @if($group->can_delete)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Suppression</span>
-                                @endif
+                            <div class="space-y-2">
+                                @php
+                                    $resources = [
+                                        'companies' => 'Entreprises',
+                                        'technicians' => 'Techniciens',
+                                        'interventions' => 'Interventions',
+                                        'organizations' => 'Organisations',
+                                        'groups' => 'Groupes',
+                                    ];
+                                    $hasAnyPermission = false;
+                                @endphp
+                                
+                                @foreach($resources as $resource => $label)
+                                    @php
+                                        $read = $group->{$resource . '_read'};
+                                        $write = $group->{$resource . '_write'};
+                                        $delete = $group->{$resource . '_delete'};
+                                        if ($read || $write || $delete) {
+                                            $hasAnyPermission = true;
+                                        }
+                                    @endphp
+                                    @if($read || $write || $delete)
+                                        <div class="text-sm">
+                                            <span class="font-medium text-gray-700">{{ $label }}:</span>
+                                            @if($read)
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 ml-1">Lecture</span>
+                                            @endif
+                                            @if($write)
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 ml-1">Modification</span>
+                                            @endif
+                                            @if($delete)
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 ml-1">Suppression</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endforeach
+                                
                                 @if($group->can_invite)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Inviter</span>
+                                    @php $hasAnyPermission = true; @endphp
+                                    <div class="text-sm">
+                                        <span class="font-medium text-gray-700">Utilisateurs:</span>
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 ml-1">Inviter</span>
+                                    </div>
                                 @endif
-                                @if(!$group->can_read && !$group->can_write && !$group->can_delete && !$group->can_invite)
+                                
+                                @if(!$hasAnyPermission)
                                     <span class="text-sm text-gray-400">Aucune permission</span>
                                 @endif
                             </div>
@@ -84,41 +118,38 @@
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold">Ajouter un membre</h3>
-                    </div>
-                    
-                    <form action="{{ route('groups.members.add', $group) }}" method="POST" class="mb-6">
-                        @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">Utilisateur *</label>
-                                <select name="user_id" id="user_id" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="">Sélectionner un utilisateur</option>
-                                    @foreach($allUsers as $user)
-                                        @if(!in_array($user->id, $groupUserIds))
-                                            <option value="{{ $user->id }}">{{ $user->full_name }} ({{ $user->email }})</option>
-                                        @endif
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="flex items-end">
-                                <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded">
-                                    Ajouter
-                                </button>
-                            </div>
+            @if(auth()->user()->canWriteGroups())
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Ajouter un membre</h3>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">Les permissions sont définies au niveau du groupe : 
-                            @if($group->can_read) <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lecture</span> @endif
-                            @if($group->can_write) <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Écriture</span> @endif
-                            @if($group->can_delete) <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Suppression</span> @endif
-                            @if($group->can_invite) <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Inviter</span> @endif
-                        </p>
-                    </form>
+                        
+                        <form action="{{ route('groups.members.add', $group) }}" method="POST" class="mb-6">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">Utilisateur *</label>
+                                    <select name="user_id" id="user_id" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="">Sélectionner un utilisateur</option>
+                                        @foreach($allUsers as $user)
+                                            @if(!in_array($user->id, $groupUserIds))
+                                                <option value="{{ $user->id }}">{{ $user->full_name }} ({{ $user->email }})</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded">
+                                        Ajouter
+                                    </button>
+                                </div>
+                            </div>
+                        <p class="mt-2 text-sm text-gray-500">Les permissions sont définies au niveau du groupe pour chaque ressource.</p>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
@@ -164,11 +195,15 @@
                                                 <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <form action="{{ route('groups.members.remove', [$group, $user]) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir retirer cet utilisateur du groupe ?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900">Retirer</button>
-                                                </form>
+                                                @if(auth()->user()->canWriteGroups())
+                                                    <form action="{{ route('groups.members.remove', [$group, $user]) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir retirer cet utilisateur du groupe ?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">Retirer</button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

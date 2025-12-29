@@ -5,10 +5,12 @@
                 {{ __('Détails de l\'organisation') }}
             </h2>
             <div>
-                <a href="{{ route('organizations.edit', $organization) }}"
-                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Modifier
-                </a>
+                @if(auth()->user()->canWriteOrganizations())
+                    <a href="{{ route('organizations.edit', $organization) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        Modifier
+                    </a>
+                @endif
                 <a href="{{ route('organizations.index') }}"
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     Retour
@@ -130,8 +132,12 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <a href="{{ route('groups.show', $group) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
-                                                <a href="{{ route('groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900">Modifier</a>
+                                                @if(auth()->user()->canReadGroups())
+                                                    <a href="{{ route('groups.show', $group) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
+                                                @endif
+                                                @if(auth()->user()->canWriteGroups())
+                                                    <a href="{{ route('groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900">Modifier</a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

@@ -5,10 +5,12 @@
                 {{ __('Détails de l\'intervention') }}
             </h2>
             <div>
-                <a href="{{ route('interventions.edit', $intervention) }}"
-                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Modifier
-                </a>
+                @if(auth()->user()->canWriteInterventions())
+                    <a href="{{ route('interventions.edit', $intervention) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        Modifier
+                    </a>
+                @endif
                 <a href="{{ route('interventions.index') }}"
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     Retour

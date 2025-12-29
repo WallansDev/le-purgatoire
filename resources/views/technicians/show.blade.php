@@ -5,10 +5,12 @@
                 {{ __('Détails du technicien') }}
             </h2>
             <div>
-                <a href="{{ route('technicians.edit', $technician) }}"
-                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Modifier
-                </a>
+                @if(auth()->user()->canWriteTechnicians())
+                    <a href="{{ route('technicians.edit', $technician) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        Modifier
+                    </a>
+                @endif
                 <a href="{{ route('technicians.index') }}"
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     Retour

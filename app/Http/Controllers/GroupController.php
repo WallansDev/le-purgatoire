@@ -16,6 +16,13 @@ class GroupController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les groupes.');
+        }
+        
         $query = Group::with(['organization', 'users'])->withCount('users');
         
         // Recherche par nom ou organisation
@@ -46,6 +53,13 @@ class GroupController extends Controller
      */
     public function create(): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des groupes.');
+        }
+        
         $organizations = Organization::orderBy('name')->get();
         return view('groups.create', compact('organizations'));
     }
@@ -55,14 +69,38 @@ class GroupController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des groupes.');
+        }
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'is_default' => 'boolean',
-            'can_read' => 'nullable|boolean',
-            'can_write' => 'nullable|boolean',
-            'can_delete' => 'nullable|boolean',
+            // Permissions Companies
+            'companies_read' => 'nullable|boolean',
+            'companies_write' => 'nullable|boolean',
+            'companies_delete' => 'nullable|boolean',
+            // Permissions Technicians
+            'technicians_read' => 'nullable|boolean',
+            'technicians_write' => 'nullable|boolean',
+            'technicians_delete' => 'nullable|boolean',
+            // Permissions Interventions
+            'interventions_read' => 'nullable|boolean',
+            'interventions_write' => 'nullable|boolean',
+            'interventions_delete' => 'nullable|boolean',
+            // Permissions Organizations
+            'organizations_read' => 'nullable|boolean',
+            'organizations_write' => 'nullable|boolean',
+            'organizations_delete' => 'nullable|boolean',
+            // Permissions Groups
+            'groups_read' => 'nullable|boolean',
+            'groups_write' => 'nullable|boolean',
+            'groups_delete' => 'nullable|boolean',
+            // Permission Invite
             'can_invite' => 'nullable|boolean',
         ]);
 
@@ -88,6 +126,13 @@ class GroupController extends Controller
      */
     public function show(Group $group): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les groupes.');
+        }
+        
         $group->load(['organization', 'users']);
         
         // Récupérer tous les utilisateurs pour le formulaire d'ajout
@@ -102,6 +147,12 @@ class GroupController extends Controller
      */
     public function addMember(Request $request, Group $group): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture (nécessaire pour modifier un groupe)
+        if (!$user->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        }
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
@@ -125,6 +176,13 @@ class GroupController extends Controller
      */
     public function removeMember(Group $group, User $user): RedirectResponse
     {
+        $currentUser = auth()->user();
+        
+        // Vérifier la permission d'écriture (nécessaire pour modifier un groupe)
+        if (!$currentUser->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        }
+        
         $group->users()->detach($user->id);
         
         return back()
@@ -136,6 +194,13 @@ class GroupController extends Controller
      */
     public function edit(Group $group): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        }
+        
         $organizations = Organization::orderBy('name')->get();
         return view('groups.edit', compact('group', 'organizations'));
     }
@@ -145,14 +210,38 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        }
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'is_default' => 'boolean',
-            'can_read' => 'nullable|boolean',
-            'can_write' => 'nullable|boolean',
-            'can_delete' => 'nullable|boolean',
+            // Permissions Companies
+            'companies_read' => 'nullable|boolean',
+            'companies_write' => 'nullable|boolean',
+            'companies_delete' => 'nullable|boolean',
+            // Permissions Technicians
+            'technicians_read' => 'nullable|boolean',
+            'technicians_write' => 'nullable|boolean',
+            'technicians_delete' => 'nullable|boolean',
+            // Permissions Interventions
+            'interventions_read' => 'nullable|boolean',
+            'interventions_write' => 'nullable|boolean',
+            'interventions_delete' => 'nullable|boolean',
+            // Permissions Organizations
+            'organizations_read' => 'nullable|boolean',
+            'organizations_write' => 'nullable|boolean',
+            'organizations_delete' => 'nullable|boolean',
+            // Permissions Groups
+            'groups_read' => 'nullable|boolean',
+            'groups_write' => 'nullable|boolean',
+            'groups_delete' => 'nullable|boolean',
+            // Permission Invite
             'can_invite' => 'nullable|boolean',
         ]);
 
@@ -179,6 +268,13 @@ class GroupController extends Controller
      */
     public function destroy(Group $group): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de suppression
+        if (!$user->canDeleteGroups()) {
+            abort(403, 'Vous n\'avez pas la permission de supprimer des groupes.');
+        }
+        
         $group->delete();
 
         return redirect()->route('groups.index')

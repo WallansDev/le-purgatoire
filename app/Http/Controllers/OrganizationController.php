@@ -14,6 +14,13 @@ class OrganizationController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les organisations.');
+        }
+        
         $query = Organization::withCount('groups');
         
         // Recherche par nom ou slug
@@ -41,6 +48,13 @@ class OrganizationController extends Controller
      */
     public function create(): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des organisations.');
+        }
+        
         return view('organizations.create');
     }
 
@@ -49,6 +63,12 @@ class OrganizationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des organisations.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:organizations,slug',
@@ -74,6 +94,13 @@ class OrganizationController extends Controller
      */
     public function show(Organization $organization): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les organisations.');
+        }
+        
         $organization->load(['groups' => function ($query) {
             $query->withCount('users')->latest();
         }]);
@@ -86,6 +113,13 @@ class OrganizationController extends Controller
      */
     public function edit(Organization $organization): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des organisations.');
+        }
+        
         return view('organizations.edit', compact('organization'));
     }
 
@@ -94,6 +128,12 @@ class OrganizationController extends Controller
      */
     public function update(Request $request, Organization $organization): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des organisations.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:organizations,slug,' . $organization->id,
@@ -119,6 +159,13 @@ class OrganizationController extends Controller
      */
     public function destroy(Organization $organization): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de suppression
+        if (!$user->canDeleteOrganizations()) {
+            abort(403, 'Vous n\'avez pas la permission de supprimer des organisations.');
+        }
+        
         $organization->delete();
 
         return redirect()->route('organizations.index')

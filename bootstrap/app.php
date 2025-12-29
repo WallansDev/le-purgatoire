@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'password.changed' => EnsurePasswordIsChanged::class,
             'owner.exists' => EnsureOwnerExists::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
         
         // Appliquer le middleware globalement pour vérifier qu'un owner existe

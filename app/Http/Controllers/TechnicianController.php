@@ -15,6 +15,13 @@ class TechnicianController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les techniciens.');
+        }
+        
         $query = Technician::with('company')->withKpis();
         
         // Recherche par nom, prénom, téléphone ou email
@@ -42,6 +49,13 @@ class TechnicianController extends Controller
      */
     public function create(): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des techniciens.');
+        }
+        
         $companies = Company::orderBy('name')->get();
         
         return view('technicians.create', compact('companies'));
@@ -52,6 +66,12 @@ class TechnicianController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de créer des techniciens.');
+        }
         $validated = $request->validate([
             'company_id' => 'required|exists:companies,id',
             'first_name' => 'required|string|max:255',
@@ -75,6 +95,13 @@ class TechnicianController extends Controller
      */
     public function show(Technician $technician): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de lecture
+        if (!$user->canReadTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de consulter les techniciens.');
+        }
+        
         $technician->load([
             'company',
             'interventions' => function ($query) {
@@ -93,6 +120,13 @@ class TechnicianController extends Controller
      */
     public function edit(Technician $technician): View
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des techniciens.');
+        }
+        
         $companies = Company::orderBy('name')->get();
         
         return view('technicians.edit', compact('technician', 'companies'));
@@ -103,6 +137,12 @@ class TechnicianController extends Controller
      */
     public function update(Request $request, Technician $technician): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission d'écriture
+        if (!$user->canWriteTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des techniciens.');
+        }
         $validated = $request->validate([
             'company_id' => 'required|exists:companies,id',
             'first_name' => 'required|string|max:255',
@@ -126,6 +166,13 @@ class TechnicianController extends Controller
      */
     public function destroy(Technician $technician): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Vérifier la permission de suppression
+        if (!$user->canDeleteTechnicians()) {
+            abort(403, 'Vous n\'avez pas la permission de supprimer des techniciens.');
+        }
+        
         $technician->delete();
 
         return redirect()->route('technicians.index')

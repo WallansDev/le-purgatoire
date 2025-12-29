@@ -5,10 +5,12 @@
                 {{ __('Détails de l\'entreprise') }}
             </h2>
             <div>
-                <a href="{{ route('companies.edit', $company) }}"
-                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Modifier
-                </a>
+                @if(auth()->user()->canWriteCompanies())
+                    <a href="{{ route('companies.edit', $company) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        Modifier
+                    </a>
+                @endif
                 <a href="{{ route('companies.index') }}"
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     Retour
@@ -102,10 +104,12 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold">Techniciens ({{ $company->technicians->count() }})</h3>
-                        <a href="{{ route('technicians.create') }}"
-                            class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
-                            Ajouter un technicien
-                        </a>
+                        @if(auth()->user()->canWriteTechnicians())
+                            <a href="{{ route('technicians.create') }}"
+                                class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
+                                Ajouter un technicien
+                            </a>
+                        @endif
                     </div>
 
                     @if ($company->technicians->count() > 0)
