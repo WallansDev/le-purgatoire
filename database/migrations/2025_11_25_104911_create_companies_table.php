@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('siret', 14)->unique();
+            $table->string('siret', 14)->unique()->nullable();
             $table->string('logo_path')->nullable();
             $table->string('address_line1')->nullable();
             $table->string('address_line2')->nullable();
             $table->string('postal_code', 16)->nullable();
             $table->string('city')->nullable();
-            $table->string('country')->default('France');
+            $table->string('country')->default('France')->nullable();
             $table->string('contact_name')->nullable();
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
