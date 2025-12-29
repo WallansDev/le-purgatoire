@@ -58,6 +58,13 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        <x-dropdown-link :href="route('organizations.index')">
+                            <i class="fa-solid fa-user"></i> {{ __('Organisations') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('groups.index')">
+                            <i class="fa-solid fa-user"></i> {{ __('Groupes') }}
+                        </x-dropdown-link>
+                        <hr>
                         <x-dropdown-link :href="route('profile.edit')">
                             <i class="fa-solid fa-user"></i> {{ __('Profil') }}
                         </x-dropdown-link>
