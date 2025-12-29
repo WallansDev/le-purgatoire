@@ -45,9 +45,20 @@ class UserController extends Controller
             $organizations = Organization::orderBy('name')->get();
             $groups = Group::with('organization')->orderBy('name')->get();
         } else {
-            // Sinon, filtrer selon les permissions : l'utilisateur doit appartenir à un groupe avec can_write
-            $organizations = $user->getOrganizationsWhereCanInvite();
-            $groups = $user->getGroupsWhereCanInvite();
+            // Filtrer selon l'appartenance : l'utilisateur doit appartenir aux groupes/organisations
+            // ET avoir la permission can_invite pour inviter des utilisateurs
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id)
+                  ->where('groups.can_invite', true);
+            })->orderBy('name')->get();
+            
+            $groups = Group::whereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
+            ->where('can_invite', true)
+            ->with('organization')
+            ->orderBy('name')
+            ->get();
         }
         
         return view('users.create', compact('organizations', 'groups'));
@@ -130,9 +141,20 @@ class UserController extends Controller
             $organizations = Organization::orderBy('name')->get();
             $groups = Group::with('organization')->orderBy('name')->get();
         } else {
-            // Sinon, filtrer selon les permissions
-            $organizations = $currentUser->getOrganizationsWhereCanInvite();
-            $groups = $currentUser->getGroupsWhereCanInvite();
+            // Filtrer selon l'appartenance : l'utilisateur doit appartenir aux groupes/organisations
+            // ET avoir la permission can_invite pour inviter des utilisateurs
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($currentUser) {
+                $q->where('users.id', $currentUser->id)
+                  ->where('groups.can_invite', true);
+            })->orderBy('name')->get();
+            
+            $groups = Group::whereHas('users', function ($q) use ($currentUser) {
+                $q->where('users.id', $currentUser->id);
+            })
+            ->where('can_invite', true)
+            ->with('organization')
+            ->orderBy('name')
+            ->get();
         }
         
         $user->load('groups');

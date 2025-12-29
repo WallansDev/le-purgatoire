@@ -25,6 +25,13 @@ class GroupController extends Controller
         
         $query = Group::with(['organization', 'users'])->withCount('users');
         
+        // Filtrer pour n'afficher que les groupes auxquels l'utilisateur appartient (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            $query->whereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        }
+        
         // Recherche par nom ou organisation
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -43,7 +50,15 @@ class GroupController extends Controller
         }
         
         $groups = $query->latest()->paginate(15)->withQueryString();
-        $organizations = Organization::orderBy('name')->get();
+        
+        // Filtrer les organisations pour le filtre (seulement celles auxquelles l'utilisateur appartient)
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+        } else {
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('name')->get();
+        }
         
         return view('groups.index', compact('groups', 'organizations'));
     }
@@ -60,7 +75,15 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer des groupes.');
         }
         
-        $organizations = Organization::orderBy('name')->get();
+        // Filtrer les organisations : seulement celles auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+        } else {
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('name')->get();
+        }
+        
         return view('groups.create', compact('organizations'));
     }
 
@@ -133,6 +156,11 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les groupes.');
         }
         
+        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
+        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+            abort(403, 'Vous n\'avez pas accès à ce groupe.');
+        }
+        
         $group->load(['organization', 'users']);
         
         // Récupérer tous les utilisateurs pour le formulaire d'ajout
@@ -201,7 +229,20 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
         }
         
-        $organizations = Organization::orderBy('name')->get();
+        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
+        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+            abort(403, 'Vous n\'avez pas accès à ce groupe.');
+        }
+        
+        // Filtrer les organisations : seulement celles auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+        } else {
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('name')->get();
+        }
+        
         return view('groups.edit', compact('group', 'organizations'));
     }
 
@@ -216,6 +257,12 @@ class GroupController extends Controller
         if (!$user->canWriteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
         }
+        
+        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
+        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+            abort(403, 'Vous n\'avez pas accès à ce groupe.');
+        }
+        
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
@@ -273,6 +320,11 @@ class GroupController extends Controller
         // Vérifier la permission de suppression
         if (!$user->canDeleteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de supprimer des groupes.');
+        }
+        
+        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
+        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+            abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
         
         $group->delete();

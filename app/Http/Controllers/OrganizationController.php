@@ -23,6 +23,13 @@ class OrganizationController extends Controller
         
         $query = Organization::withCount('groups');
         
+        // Filtrer pour n'afficher que les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            $query->whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        }
+        
         // Recherche par nom ou slug
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -101,8 +108,22 @@ class OrganizationController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les organisations.');
         }
         
-        $organization->load(['groups' => function ($query) {
+        // Vérifier que l'utilisateur appartient à l'organisation (sauf le propriétaire)
+        if (!$user->isOwner() && !$organization->groups()->whereHas('users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists()) {
+            abort(403, 'Vous n\'avez pas accès à cette organisation.');
+        }
+        
+        $organization->load(['groups' => function ($query) use ($user) {
             $query->withCount('users')->latest();
+            
+            // Filtrer les groupes pour n'afficher que ceux auxquels l'utilisateur appartient (sauf le propriétaire)
+            if (!$user->isOwner()) {
+                $query->whereHas('users', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            }
         }]);
         
         return view('organizations.show', compact('organization'));
@@ -120,6 +141,13 @@ class OrganizationController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des organisations.');
         }
         
+        // Vérifier que l'utilisateur appartient à l'organisation (sauf le propriétaire)
+        if (!$user->isOwner() && !$organization->groups()->whereHas('users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists()) {
+            abort(403, 'Vous n\'avez pas accès à cette organisation.');
+        }
+        
         return view('organizations.edit', compact('organization'));
     }
 
@@ -134,6 +162,14 @@ class OrganizationController extends Controller
         if (!$user->canWriteOrganizations()) {
             abort(403, 'Vous n\'avez pas la permission de modifier des organisations.');
         }
+        
+        // Vérifier que l'utilisateur appartient à l'organisation (sauf le propriétaire)
+        if (!$user->isOwner() && !$organization->groups()->whereHas('users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists()) {
+            abort(403, 'Vous n\'avez pas accès à cette organisation.');
+        }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:organizations,slug,' . $organization->id,
@@ -164,6 +200,13 @@ class OrganizationController extends Controller
         // Vérifier la permission de suppression
         if (!$user->canDeleteOrganizations()) {
             abort(403, 'Vous n\'avez pas la permission de supprimer des organisations.');
+        }
+        
+        // Vérifier que l'utilisateur appartient à l'organisation (sauf le propriétaire)
+        if (!$user->isOwner() && !$organization->groups()->whereHas('users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->exists()) {
+            abort(403, 'Vous n\'avez pas accès à cette organisation.');
         }
         
         $organization->delete();
