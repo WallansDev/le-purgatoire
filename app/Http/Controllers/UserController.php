@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\UserCreatedMail;
+use App\Models\Group;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -36,11 +38,26 @@ class UserController extends Controller
 
     public function create(): View
     {
-        return view('users.create');
+        $user = auth()->user();
+        
+        // Seul le propriétaire peut voir toutes les organisations et groupes
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+            $groups = Group::with('organization')->orderBy('name')->get();
+        } else {
+            // Sinon, filtrer selon les permissions : l'utilisateur doit appartenir à un groupe avec can_write
+            $organizations = $user->getOrganizationsWhereCanInvite();
+            $groups = $user->getGroupsWhereCanInvite();
+        }
+        
+        return view('users.create', compact('organizations', 'groups'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
+        // Validation des groupes : vérifier que l'utilisateur peut inviter dans ces groupes
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -48,7 +65,23 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:30',
             'is_admin' => 'nullable|boolean',
             'password' => 'required|string|min:8|confirmed',
+            'group_ids' => 'nullable|array',
+            'group_ids.*' => 'exists:groups,id',
         ]);
+        
+        // Vérifier que l'utilisateur peut inviter dans les groupes sélectionnés
+        if ($request->filled('group_ids') && !$user->isOwner()) {
+            $allowedGroupIds = $user->getGroupsWhereCanInvite()->pluck('id')->toArray();
+            $requestedGroupIds = $request->input('group_ids');
+            
+            foreach ($requestedGroupIds as $groupId) {
+                if (!in_array($groupId, $allowedGroupIds)) {
+                    return back()
+                        ->withInput()
+                        ->withErrors(['group_ids' => 'Vous n\'avez pas la permission d\'inviter dans certains groupes sélectionnés.']);
+                }
+            }
+        }
 
         // Sauvegarder le mot de passe en clair temporairement pour l'envoyer par email
         $temporaryPassword = $validated['password'];
@@ -64,6 +97,11 @@ class UserController extends Controller
             'must_change_password' => true,
             'email_verified_at' => now(),
         ]);
+
+        // Attacher l'utilisateur aux groupes (sans permissions car elles sont sur le groupe)
+        if ($request->filled('group_ids')) {
+            $user->groups()->sync($request->input('group_ids'));
+        }
 
         // Envoyer l'email de bienvenue avec le mot de passe temporaire
         try {
@@ -85,7 +123,21 @@ class UserController extends Controller
             abort(403, 'Le compte propriétaire ne peut pas être modifié par un administrateur.');
         }
 
-        return view('users.edit', compact('user'));
+        $currentUser = auth()->user();
+        
+        // Seul le propriétaire peut voir toutes les organisations et groupes
+        if ($currentUser->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+            $groups = Group::with('organization')->orderBy('name')->get();
+        } else {
+            // Sinon, filtrer selon les permissions
+            $organizations = $currentUser->getOrganizationsWhereCanInvite();
+            $groups = $currentUser->getGroupsWhereCanInvite();
+        }
+        
+        $user->load('groups');
+        
+        return view('users.edit', compact('user', 'organizations', 'groups'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -97,6 +149,8 @@ class UserController extends Controller
                 ->with('error', 'Le compte propriétaire ne peut pas être modifié par un administrateur. Le propriétaire doit modifier son mot de passe via son profil.');
         }
 
+        $currentUser = auth()->user();
+        
         // Pour les autres utilisateurs, modification complète autorisée
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
@@ -110,7 +164,23 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:30',
             'is_admin' => 'nullable|boolean',
             'password' => 'nullable|string|min:8|confirmed',
+            'group_ids' => 'nullable|array',
+            'group_ids.*' => 'exists:groups,id',
         ]);
+        
+        // Vérifier que l'utilisateur peut inviter dans les groupes sélectionnés
+        if ($request->filled('group_ids') && !$currentUser->isOwner()) {
+            $allowedGroupIds = $currentUser->getGroupsWhereCanInvite()->pluck('id')->toArray();
+            $requestedGroupIds = $request->input('group_ids');
+            
+            foreach ($requestedGroupIds as $groupId) {
+                if (!in_array($groupId, $allowedGroupIds)) {
+                    return back()
+                        ->withInput()
+                        ->withErrors(['group_ids' => 'Vous n\'avez pas la permission d\'inviter dans certains groupes sélectionnés.']);
+                }
+            }
+        }
 
         $user->update([
             'first_name' => $validated['first_name'],
@@ -126,6 +196,13 @@ class UserController extends Controller
                 'password' => Hash::make($validated['password']),
                 'must_change_password' => true,
             ]);
+        }
+
+        // Synchroniser les groupes (sans permissions car elles sont sur le groupe)
+        if ($request->filled('group_ids')) {
+            $user->groups()->sync($request->input('group_ids'));
+        } else {
+            $user->groups()->sync([]);
         }
 
         return redirect()

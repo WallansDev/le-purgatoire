@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\OwnerSetupController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForcedPasswordController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\MailTestController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TechnicianController;
@@ -41,6 +43,12 @@ Route::middleware('auth')->group(function () {
         Route::resource('technicians', TechnicianController::class);
         Route::resource('interventions', InterventionController::class);
         Route::resource('tags', TagController::class);
+        Route::resource('organizations', OrganizationController::class);
+        Route::resource('groups', GroupController::class);
+        
+        // Routes pour gérer les membres des groupes
+        Route::post('groups/{group}/members', [GroupController::class, 'addMember'])->name('groups.members.add');
+        Route::delete('groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('groups.members.remove');
 
         Route::middleware('admin')->group(function () {
             Route::resource('users', UserController::class)->except(['show']);
