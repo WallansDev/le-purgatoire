@@ -417,4 +417,34 @@ class User extends Authenticatable
             ->where('groups.organizations_delete', true)
             ->exists();
     }
+
+    /**
+     * Get organizations where user has companies_read permission.
+     */
+    public function getOrganizationsWithCompaniesRead()
+    {
+        if ($this->isOwner()) {
+            return Organization::all();
+        }
+        
+        return Organization::whereHas('groups.users', function ($q) {
+            $q->where('users.id', $this->id)
+              ->where('groups.companies_read', true);
+        })->get();
+    }
+
+    /**
+     * Get organization IDs where user has companies_read permission.
+     */
+    public function getOrganizationIdsWithCompaniesRead(): array
+    {
+        if ($this->isOwner()) {
+            return Organization::pluck('id')->toArray();
+        }
+        
+        return Organization::whereHas('groups.users', function ($q) {
+            $q->where('users.id', $this->id)
+              ->where('groups.companies_read', true);
+        })->pluck('id')->toArray();
+    }
 }

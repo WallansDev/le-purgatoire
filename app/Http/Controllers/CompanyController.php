@@ -17,24 +17,26 @@ class CompanyController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier la permission de lecture
-        if (!$user->canReadCompanies()) {
-            abort(403, 'Vous n\'avez pas la permission de consulter les entreprises.');
-        }
+        // Ne pas bloquer l'accès même si l'utilisateur n'a pas la permission
+        // La page se chargera mais n'affichera rien si l'utilisateur n'a pas accès
         
         $query = Company::withCount('technicians');
         
-        // Filtrer selon les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        // Filtrer selon les organisations où l'utilisateur a la permission companies_read (sauf le propriétaire)
         if (!$user->isOwner()) {
-            // Récupérer les IDs des organisations auxquelles l'utilisateur appartient
-            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->pluck('id')->toArray();
+            // Récupérer les IDs des organisations où l'utilisateur a la permission companies_read
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
             
-            // Filtrer les entreprises liées à ces organisations
-            $query->whereHas('organizations', function ($q) use ($organizationIds) {
-                $q->whereIn('organizations.id', $organizationIds);
-            });
+            // Si l'utilisateur n'a accès à aucune organisation, filtrer pour ne rien retourner
+            // La page se chargera quand même mais affichera "Aucune entreprise trouvée"
+            if (empty($organizationIds)) {
+                $query->whereRaw('1 = 0'); // Condition impossible pour ne rien retourner
+            } else {
+                // Filtrer les entreprises liées à ces organisations
+                $query->whereHas('organizations', function ($q) use ($organizationIds) {
+                    $q->whereIn('organizations.id', $organizationIds);
+                });
+            }
         }
         
         // Recherche par nom ou SIRET
@@ -63,12 +65,13 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer des entreprises.');
         }
         
-        // Récupérer les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        // Récupérer les organisations où l'utilisateur a la permission companies_write (sauf le propriétaire)
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
         } else {
             $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
+                $q->where('users.id', $user->id)
+                  ->where('groups.companies_write', true);
             })->orderBy('name')->get();
         }
         
@@ -102,10 +105,11 @@ class CompanyController extends Controller
             'organization_ids.*' => 'exists:organizations,id',
         ]);
 
-        // Vérifier que l'utilisateur appartient aux organisations sélectionnées (sauf le propriétaire)
+        // Vérifier que l'utilisateur a la permission companies_write pour les organisations sélectionnées (sauf le propriétaire)
         if ($request->filled('organization_ids') && !$user->isOwner()) {
             $allowedOrganizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
+                $q->where('users.id', $user->id)
+                  ->where('groups.companies_write', true);
             })->pluck('id')->toArray();
             
             $requestedOrganizationIds = $request->input('organization_ids');
@@ -114,7 +118,7 @@ class CompanyController extends Controller
                 if (!in_array($organizationId, $allowedOrganizationIds)) {
                     return back()
                         ->withInput()
-                        ->withErrors(['organization_ids' => 'Vous n\'avez pas accès à certaines organisations sélectionnées.']);
+                        ->withErrors(['organization_ids' => 'Vous n\'avez pas la permission de créer des entreprises pour certaines organisations sélectionnées.']);
                 }
             }
         }
@@ -142,13 +146,11 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les entreprises.');
         }
         
-        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        // Vérifier que l'utilisateur a la permission companies_read pour cette entreprise (sauf le propriétaire)
         if (!$user->isOwner()) {
-            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->pluck('id')->toArray();
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
             
-            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
+            if (empty($organizationIds) || !$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
                 abort(403, 'Vous n\'avez pas accès à cette entreprise.');
             }
         }
@@ -172,23 +174,22 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des entreprises.');
         }
         
-        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        // Vérifier que l'utilisateur a la permission companies_read pour cette entreprise (sauf le propriétaire)
         if (!$user->isOwner()) {
-            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->pluck('id')->toArray();
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
             
-            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
+            if (empty($organizationIds) || !$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
                 abort(403, 'Vous n\'avez pas accès à cette entreprise.');
             }
         }
         
-        // Récupérer les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        // Récupérer les organisations où l'utilisateur a la permission companies_write (sauf le propriétaire)
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
         } else {
             $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
+                $q->where('users.id', $user->id)
+                  ->where('groups.companies_write', true);
             })->orderBy('name')->get();
         }
         
@@ -224,10 +225,11 @@ class CompanyController extends Controller
             'organization_ids.*' => 'exists:organizations,id',
         ]);
 
-        // Vérifier que l'utilisateur appartient aux organisations sélectionnées (sauf le propriétaire)
+        // Vérifier que l'utilisateur a la permission companies_write pour les organisations sélectionnées (sauf le propriétaire)
         if ($request->filled('organization_ids') && !$user->isOwner()) {
             $allowedOrganizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
+                $q->where('users.id', $user->id)
+                  ->where('groups.companies_write', true);
             })->pluck('id')->toArray();
             
             $requestedOrganizationIds = $request->input('organization_ids');
@@ -236,7 +238,7 @@ class CompanyController extends Controller
                 if (!in_array($organizationId, $allowedOrganizationIds)) {
                     return back()
                         ->withInput()
-                        ->withErrors(['organization_ids' => 'Vous n\'avez pas accès à certaines organisations sélectionnées.']);
+                        ->withErrors(['organization_ids' => 'Vous n\'avez pas la permission de modifier des entreprises pour certaines organisations sélectionnées.']);
                 }
             }
         }
@@ -266,14 +268,23 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de supprimer des entreprises.');
         }
         
-        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        // Vérifier que l'utilisateur a la permission companies_delete pour cette entreprise (sauf le propriétaire)
         if (!$user->isOwner()) {
-            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
+            // Vérifier d'abord la permission de lecture
+            $readOrganizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            
+            if (empty($readOrganizationIds) || !$company->organizations()->whereIn('organizations.id', $readOrganizationIds)->exists()) {
+                abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+            }
+            
+            // Vérifier la permission de suppression
+            $deleteOrganizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id)
+                  ->where('groups.companies_delete', true);
             })->pluck('id')->toArray();
             
-            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
-                abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+            if (empty($deleteOrganizationIds) || !$company->organizations()->whereIn('organizations.id', $deleteOrganizationIds)->exists()) {
+                abort(403, 'Vous n\'avez pas la permission de supprimer cette entreprise.');
             }
         }
         

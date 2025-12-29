@@ -68,14 +68,17 @@
                                         <h4 class="text-md font-semibold text-gray-800 mb-3">{{ $label }}</h4>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
+                                                <input type="hidden" name="{{ $resource }}_read" value="0">
                                                 <input type="checkbox" name="{{ $resource }}_read" value="1" {{ old($resource . '_read', $group->{$resource . '_read'}) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                                 <span class="ml-2 text-sm text-gray-700">Lecture</span>
                                             </label>
                                             <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
+                                                <input type="hidden" name="{{ $resource }}_write" value="0">
                                                 <input type="checkbox" name="{{ $resource }}_write" value="1" {{ old($resource . '_write', $group->{$resource . '_write'}) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                                 <span class="ml-2 text-sm text-gray-700">Modification</span>
                                             </label>
                                             <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
+                                                <input type="hidden" name="{{ $resource }}_delete" value="0">
                                                 <input type="checkbox" name="{{ $resource }}_delete" value="1" {{ old($resource . '_delete', $group->{$resource . '_delete'}) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                                 <span class="ml-2 text-sm text-gray-700">Suppression</span>
                                             </label>
@@ -87,6 +90,7 @@
                                     <h4 class="text-md font-semibold text-gray-800 mb-3">Utilisateurs</h4>
                                     <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
                                         <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
+                                            <input type="hidden" name="can_invite" value="0">
                                             <input type="checkbox" name="can_invite" value="1" {{ old('can_invite', $group->can_invite) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                             <span class="ml-2 text-sm text-gray-700">Inviter des utilisateurs</span>
                                         </label>
