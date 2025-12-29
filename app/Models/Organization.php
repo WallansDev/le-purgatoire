@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -69,6 +70,15 @@ class Organization extends Model
     public function defaultGroup()
     {
         return $this->groups()->where('is_default', true)->first();
+    }
+
+    /**
+     * Get the companies that belong to this organization.
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'company_organization')
+            ->withTimestamps();
     }
 }
 

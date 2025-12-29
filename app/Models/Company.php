@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Storage;
@@ -35,6 +36,15 @@ class Company extends Model
     public function interventions(): HasManyThrough
     {
         return $this->hasManyThrough(Intervention::class, Technician::class);
+    }
+
+    /**
+     * Get the organizations that have access to this company.
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'company_organization')
+            ->withTimestamps();
     }
 
     /**

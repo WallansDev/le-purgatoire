@@ -79,6 +79,20 @@
                                 <x-text-input id="contact_phone" class="block mt-1 w-full" type="text" name="contact_phone" :value="old('contact_phone', $company->contact_phone)" />
                                 <x-input-error :messages="$errors->get('contact_phone')" class="mt-2" />
                             </div>
+
+                            <div class="md:col-span-2">
+                                <x-input-label for="organization_ids" :value="__('Organisations')" />
+                                <p class="text-sm text-gray-500 mb-2">Sélectionnez les organisations qui auront accès à cette entreprise</p>
+                                <select id="organization_ids" name="organization_ids[]" multiple class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" size="5">
+                                    @foreach($organizations as $organization)
+                                        <option value="{{ $organization->id }}" {{ in_array($organization->id, old('organization_ids', $company->organizations->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                            {{ $organization->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs organisations</p>
+                                <x-input-error :messages="$errors->get('organization_ids')" class="mt-2" />
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-end mt-6">

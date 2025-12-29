@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,19 @@ class CompanyController extends Controller
         }
         
         $query = Company::withCount('technicians');
+        
+        // Filtrer selon les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            // Récupérer les IDs des organisations auxquelles l'utilisateur appartient
+            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            // Filtrer les entreprises liées à ces organisations
+            $query->whereHas('organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
         
         // Recherche par nom ou SIRET
         if ($request->filled('search')) {
@@ -49,7 +63,16 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer des entreprises.');
         }
         
-        return view('companies.create');
+        // Récupérer les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+        } else {
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('name')->get();
+        }
+        
+        return view('companies.create', compact('organizations'));
     }
 
     /**
@@ -75,9 +98,33 @@ class CompanyController extends Controller
             'contact_name' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:20',
+            'organization_ids' => 'nullable|array',
+            'organization_ids.*' => 'exists:organizations,id',
         ]);
 
-        Company::create($validated);
+        // Vérifier que l'utilisateur appartient aux organisations sélectionnées (sauf le propriétaire)
+        if ($request->filled('organization_ids') && !$user->isOwner()) {
+            $allowedOrganizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            $requestedOrganizationIds = $request->input('organization_ids');
+            
+            foreach ($requestedOrganizationIds as $organizationId) {
+                if (!in_array($organizationId, $allowedOrganizationIds)) {
+                    return back()
+                        ->withInput()
+                        ->withErrors(['organization_ids' => 'Vous n\'avez pas accès à certaines organisations sélectionnées.']);
+                }
+            }
+        }
+
+        $company = Company::create($validated);
+        
+        // Attacher les organisations à l'entreprise
+        if ($request->filled('organization_ids')) {
+            $company->organizations()->sync($request->input('organization_ids'));
+        }
 
         return redirect()->route('companies.index')
             ->with('success', 'Entreprise créée avec succès.');
@@ -95,9 +142,20 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les entreprises.');
         }
         
+        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
+                abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+            }
+        }
+        
         $company->load(['technicians' => function ($query) {
             $query->withCount('interventions')->latest();
-        }]);
+        }, 'organizations']);
         
         return view('companies.show', compact('company'));
     }
@@ -114,7 +172,29 @@ class CompanyController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des entreprises.');
         }
         
-        return view('companies.edit', compact('company'));
+        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
+                abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+            }
+        }
+        
+        // Récupérer les organisations auxquelles l'utilisateur appartient (sauf le propriétaire)
+        if ($user->isOwner()) {
+            $organizations = Organization::orderBy('name')->get();
+        } else {
+            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('name')->get();
+        }
+        
+        $company->load('organizations');
+        
+        return view('companies.edit', compact('company', 'organizations'));
     }
 
     /**
@@ -140,9 +220,35 @@ class CompanyController extends Controller
             'contact_name' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:20',
+            'organization_ids' => 'nullable|array',
+            'organization_ids.*' => 'exists:organizations,id',
         ]);
 
+        // Vérifier que l'utilisateur appartient aux organisations sélectionnées (sauf le propriétaire)
+        if ($request->filled('organization_ids') && !$user->isOwner()) {
+            $allowedOrganizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            $requestedOrganizationIds = $request->input('organization_ids');
+            
+            foreach ($requestedOrganizationIds as $organizationId) {
+                if (!in_array($organizationId, $allowedOrganizationIds)) {
+                    return back()
+                        ->withInput()
+                        ->withErrors(['organization_ids' => 'Vous n\'avez pas accès à certaines organisations sélectionnées.']);
+                }
+            }
+        }
+
         $company->update($validated);
+        
+        // Synchroniser les organisations avec l'entreprise
+        // Si organization_ids est présent dans la requête (même vide), on synchronise
+        if ($request->has('organization_ids')) {
+            $company->organizations()->sync($request->input('organization_ids', []));
+        }
+        // Si organization_ids n'est pas présent, on ne modifie pas les organisations existantes
 
         return redirect()->route('companies.index')
             ->with('success', 'Entreprise mise à jour avec succès.');
@@ -158,6 +264,17 @@ class CompanyController extends Controller
         // Vérifier la permission de suppression
         if (!$user->canDeleteCompanies()) {
             abort(403, 'Vous n\'avez pas la permission de supprimer des entreprises.');
+        }
+        
+        // Vérifier que l'utilisateur a accès à cette entreprise via ses organisations (sauf le propriétaire)
+        if (!$user->isOwner()) {
+            $organizationIds = Organization::whereHas('groups.users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->pluck('id')->toArray();
+            
+            if (!$company->organizations()->whereIn('organizations.id', $organizationIds)->exists()) {
+                abort(403, 'Vous n\'avez pas accès à cette entreprise.');
+            }
         }
         
         $company->delete();

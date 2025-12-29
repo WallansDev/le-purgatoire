@@ -96,6 +96,18 @@
                             <p class="text-sm text-gray-500">Téléphone</p>
                             <p class="text-gray-900">{{ $company->contact_phone ?? '-' }}</p>
                         </div>
+                        @if($company->organizations->count() > 0)
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-500 mb-2">Organisations</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($company->organizations as $organization)
+                                        <a href="{{ route('organizations.show', $organization) }}" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                                            {{ $organization->name }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
