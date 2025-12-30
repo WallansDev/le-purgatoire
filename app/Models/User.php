@@ -441,10 +441,24 @@ class User extends Authenticatable
         if ($this->isOwner()) {
             return Organization::pluck('id')->toArray();
         }
-        
+
         return Organization::whereHas('groups.users', function ($q) {
             $q->where('users.id', $this->id)
               ->where('groups.companies_read', true);
         })->pluck('id')->toArray();
+    }
+
+    /**
+     * Get all companies that the user has access to through their organizations.
+     */
+    public function companies()
+    {
+        if ($this->isOwner()) {
+            return Company::all();
+        }
+
+        return Company::whereHas('organizations.groups.users', function ($query) {
+            $query->where('users.id', $this->id);
+        })->get();
     }
 }
