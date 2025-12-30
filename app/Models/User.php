@@ -224,6 +224,10 @@ class User extends Authenticatable
     public function canWriteGroups(): bool { return $this->hasPermission('groups', 'write'); }
     public function canDeleteGroups(): bool { return $this->hasPermission('groups', 'delete'); }
 
+    public function canReadTags(): bool { return $this->hasPermission('tags', 'read'); }
+    public function canWriteTags(): bool { return $this->hasPermission('tags', 'write'); }
+    public function canDeleteTags(): bool { return $this->hasPermission('tags', 'delete'); }
+
     public function canInvite(): bool { return $this->hasPermission('users', 'invite'); }
 
     // Legacy methods for backward compatibility

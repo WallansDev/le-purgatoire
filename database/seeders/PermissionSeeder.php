@@ -121,16 +121,40 @@ class PermissionSeeder extends Seeder
                 'display_name' => 'Inviter des utilisateurs',
                 'description' => 'Permet d\'inviter de nouveaux utilisateurs',
             ],
+
+            // Tags
+            [
+                'resource' => 'tags',
+                'action' => 'read',
+                'display_name' => 'Lire les tags',
+                'description' => 'Permet de consulter la liste des tags',
+            ],
+            [
+                'resource' => 'tags',
+                'action' => 'write',
+                'display_name' => 'Modifier les tags',
+                'description' => 'Permet de créer et modifier les tags',
+            ],
+            [
+                'resource' => 'tags',
+                'action' => 'delete',
+                'display_name' => 'Supprimer les tags',
+                'description' => 'Permet de supprimer les tags',
+            ],
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create([
-                'name' => $permission['resource'] . '.' . $permission['action'],
-                'display_name' => $permission['display_name'],
-                'resource' => $permission['resource'],
-                'action' => $permission['action'],
-                'description' => $permission['description'],
-            ]);
+            Permission::updateOrCreate(
+                [
+                    'resource' => $permission['resource'],
+                    'action' => $permission['action'],
+                ],
+                [
+                    'name' => $permission['resource'] . '.' . $permission['action'],
+                    'display_name' => $permission['display_name'],
+                    'description' => $permission['description'],
+                ]
+            );
         }
     }
 }
