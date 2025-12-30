@@ -64,7 +64,14 @@ class InterventionController extends Controller
         }
         
         $interventions = $query->latest('scheduled_at')->paginate(15)->withQueryString();
-        $tags = Tag::orderBy('name')->get();
+        
+        // Filtrer les tags selon les permissions de l'utilisateur
+        $tagQuery = Tag::orderBy('name');
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithPermission('tags', 'read');
+            $tagQuery->whereIn('organization_id', $organizationIds);
+        }
+        $tags = $tagQuery->get();
         
         return view('interventions.index', compact('interventions', 'tags'));
     }
@@ -96,7 +103,14 @@ class InterventionController extends Controller
         }
         
         $technicians = $query->get();
-        $tags = Tag::orderBy('name')->get();
+        
+        // Filtrer les tags selon les permissions de l'utilisateur
+        $tagQuery = Tag::orderBy('name');
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithPermission('tags', 'read');
+            $tagQuery->whereIn('organization_id', $organizationIds);
+        }
+        $tags = $tagQuery->get();
         
         return view('interventions.create', compact('technicians', 'tags'));
     }
@@ -236,7 +250,13 @@ class InterventionController extends Controller
         
         $technicians = $query->get();
         
-        $tags = Tag::orderBy('name')->get();
+        // Filtrer les tags selon les permissions de l'utilisateur
+        $tagQuery = Tag::orderBy('name');
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithPermission('tags', 'read');
+            $tagQuery->whereIn('organization_id', $organizationIds);
+        }
+        $tags = $tagQuery->get();
 
         return view('interventions.edit', compact('intervention', 'technicians', 'tags'));
     }

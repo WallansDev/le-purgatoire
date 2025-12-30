@@ -90,5 +90,13 @@ class Organization extends Model
         return $this->belongsToMany(Company::class, 'company_organization')
             ->withTimestamps();
     }
+
+    /**
+     * Get the tags that belong to this organization.
+     */
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class);
+    }
 }
 

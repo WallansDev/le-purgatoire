@@ -13,6 +13,19 @@
                         @csrf
 
                         <div>
+                            <x-input-label for="organization_id" :value="__('Organisation *')" />
+                            <select id="organization_id" name="organization_id" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <option value="">Sélectionner une organisation</option>
+                                @foreach($organizations as $organization)
+                                    <option value="{{ $organization->id }}" {{ old('organization_id', request('organization_id')) == $organization->id ? 'selected' : '' }}>
+                                        {{ $organization->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('organization_id')" class="mt-2" />
+                        </div>
+
+                        <div>
                             <x-input-label for="name" :value="__('Nom *')" />
                             <x-text-input id="name" type="text" name="name" class="mt-1 block w-full" value="{{ old('name') }}" required autofocus />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />

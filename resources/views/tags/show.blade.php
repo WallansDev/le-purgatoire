@@ -33,6 +33,10 @@
                         </div>
                     </div>
                     <div>
+                        <p class="text-sm text-gray-500">Organisation</p>
+                        <p class="text-gray-800">{{ $tag->organization->name ?? '-' }}</p>
+                    </div>
+                    <div>
                         <p class="text-sm text-gray-500">Description</p>
                         <p class="text-gray-800">{{ $tag->description ?? 'Aucune description' }}</p>
                     </div>
