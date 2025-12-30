@@ -16,54 +16,10 @@ class Group extends Model
         'name',
         'description',
         'is_default',
-        // Permissions Companies
-        'companies_read',
-        'companies_write',
-        'companies_delete',
-        // Permissions Technicians
-        'technicians_read',
-        'technicians_write',
-        'technicians_delete',
-        // Permissions Interventions
-        'interventions_read',
-        'interventions_write',
-        'interventions_delete',
-        // Permissions Organizations
-        'organizations_read',
-        'organizations_write',
-        'organizations_delete',
-        // Permissions Groups
-        'groups_read',
-        'groups_write',
-        'groups_delete',
-        // Permission Invite
-        'can_invite',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
-        // Permissions Companies
-        'companies_read' => 'boolean',
-        'companies_write' => 'boolean',
-        'companies_delete' => 'boolean',
-        // Permissions Technicians
-        'technicians_read' => 'boolean',
-        'technicians_write' => 'boolean',
-        'technicians_delete' => 'boolean',
-        // Permissions Interventions
-        'interventions_read' => 'boolean',
-        'interventions_write' => 'boolean',
-        'interventions_delete' => 'boolean',
-        // Permissions Organizations
-        'organizations_read' => 'boolean',
-        'organizations_write' => 'boolean',
-        'organizations_delete' => 'boolean',
-        // Permissions Groups
-        'groups_read' => 'boolean',
-        'groups_write' => 'boolean',
-        'groups_delete' => 'boolean',
-        // Permission Invite
-        'can_invite' => 'boolean',
     ];
 
     /**
@@ -81,6 +37,64 @@ class Group extends Model
     {
         return $this->belongsToMany(User::class, 'group_user')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the permissions for this group.
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'group_permissions')
+            ->withPivot('scope')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if this group has a specific permission.
+     */
+    public function hasPermission(string $resource, string $action, ?string $scope = null): bool
+    {
+        $query = $this->permissions()
+            ->where('resource', $resource)
+            ->where('action', $action);
+
+        if ($scope !== null) {
+            $query->wherePivot('scope', $scope);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Check if this group has permission to read a specific resource.
+     */
+    public function canRead(string $resource): bool
+    {
+        return $this->hasPermission($resource, 'read');
+    }
+
+    /**
+     * Check if this group has permission to write a specific resource.
+     */
+    public function canWrite(string $resource): bool
+    {
+        return $this->hasPermission($resource, 'write');
+    }
+
+    /**
+     * Check if this group has permission to delete a specific resource.
+     */
+    public function canDelete(string $resource): bool
+    {
+        return $this->hasPermission($resource, 'delete');
+    }
+
+    /**
+     * Check if this group can invite users.
+     */
+    public function canInvite(): bool
+    {
+        return $this->hasPermission('users', 'invite');
     }
 }
 

@@ -163,18 +163,16 @@ class User extends Authenticatable
             return Organization::all();
         }
 
-        return Organization::whereHas('groups', function ($query) use ($resource, $action, $scope) {
-            $query->whereHas('users', function ($userQuery) {
-                $userQuery->where('users.id', $this->id);
-            })
-            ->whereHas('permissions', function ($permQuery) use ($resource, $action, $scope) {
-                $permQuery->where('resource', $resource)
-                         ->where('action', $action);
+        return Organization::whereHas('groups.users', function ($query) use ($resource, $action, $scope) {
+            $query->where('users.id', $this->id)
+                  ->whereHas('permissions', function ($permQuery) use ($resource, $action, $scope) {
+                      $permQuery->where('resource', $resource)
+                               ->where('action', $action);
 
-                if ($scope !== null) {
-                    $permQuery->wherePivot('scope', $scope);
-                }
-            });
+                      if ($scope !== null) {
+                          $permQuery->wherePivot('scope', $scope);
+                      }
+                  });
         })->get();
     }
 
@@ -187,18 +185,16 @@ class User extends Authenticatable
             return Organization::pluck('id')->toArray();
         }
 
-        return Organization::whereHas('groups', function ($query) use ($resource, $action, $scope) {
-            $query->whereHas('users', function ($userQuery) {
-                $userQuery->where('users.id', $this->id);
-            })
-            ->whereHas('permissions', function ($permQuery) use ($resource, $action, $scope) {
-                $permQuery->where('resource', $resource)
-                         ->where('action', $action);
+        return Organization::whereHas('groups.users', function ($query) use ($resource, $action, $scope) {
+            $query->where('users.id', $this->id)
+                  ->whereHas('permissions', function ($permQuery) use ($resource, $action, $scope) {
+                      $permQuery->where('resource', $resource)
+                               ->where('action', $action);
 
-                if ($scope !== null) {
-                    $permQuery->wherePivot('scope', $scope);
-                }
-            });
+                      if ($scope !== null) {
+                          $permQuery->wherePivot('scope', $scope);
+                      }
+                  });
         })->pluck('id')->toArray();
     }
 

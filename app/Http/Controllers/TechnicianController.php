@@ -24,6 +24,15 @@ class TechnicianController extends Controller
         
         $query = Technician::with('company')->withKpis();
         
+        // Filtrer les techniciens pour n'afficher que ceux dont la company appartient à une organisation
+        // où l'utilisateur a la permission de lecture des companies
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $query->whereHas('company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        
         // Recherche par nom, prénom, téléphone ou email
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -56,7 +65,15 @@ class TechnicianController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer des techniciens.');
         }
         
-        $companies = Company::orderBy('name')->get();
+        // Filtrer les companies pour n'afficher que celles des organisations où l'utilisateur a la permission de lecture
+        if ($user->isOwner()) {
+            $companies = Company::orderBy('name')->get();
+        } else {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $companies = Company::whereHas('organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            })->orderBy('name')->get();
+        }
         
         return view('technicians.create', compact('companies'));
     }
@@ -102,6 +119,18 @@ class TechnicianController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les techniciens.');
         }
         
+        // Vérifier que l'utilisateur a le droit de voir la company de ce technicien
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à ce technicien.');
+            }
+        }
+        
         $technician->load([
             'company',
             'interventions' => function ($query) {
@@ -127,7 +156,27 @@ class TechnicianController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des techniciens.');
         }
         
-        $companies = Company::orderBy('name')->get();
+        // Vérifier que l'utilisateur a le droit de voir la company de ce technicien
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à ce technicien.');
+            }
+        }
+        
+        // Filtrer les companies pour n'afficher que celles des organisations où l'utilisateur a la permission de lecture
+        if ($user->isOwner()) {
+            $companies = Company::orderBy('name')->get();
+        } else {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $companies = Company::whereHas('organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            })->orderBy('name')->get();
+        }
         
         return view('technicians.edit', compact('technician', 'companies'));
     }

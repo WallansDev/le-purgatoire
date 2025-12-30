@@ -49,52 +49,28 @@
 
                         <div class="border-t pt-6 mt-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Permissions du groupe</h3>
-                            <p class="text-sm text-gray-500 mb-4">Définissez les permissions que ce groupe accorde à ses membres pour chaque ressource.</p>
-                            
-                            @php
-                                $resources = [
-                                    'companies' => 'Entreprises',
-                                    'technicians' => 'Techniciens',
-                                    'interventions' => 'Interventions',
-                                    'organizations' => 'Organisations',
-                                    'groups' => 'Groupes',
-                                ];
-                            @endphp
-                            
-                            <div class="space-y-6">
-                                @foreach($resources as $resource => $label)
-                                    <div class="border border-gray-200 rounded-lg p-4">
-                                        <h4 class="text-md font-semibold text-gray-800 mb-3">{{ $label }}</h4>
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
-                                                <input type="hidden" name="{{ $resource }}_read" value="0">
-                                                <input type="checkbox" name="{{ $resource }}_read" value="1" {{ old($resource . '_read') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                                <span class="ml-2 text-sm text-gray-700">Lecture</span>
-                                            </label>
-                                            <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
-                                                <input type="hidden" name="{{ $resource }}_write" value="0">
-                                                <input type="checkbox" name="{{ $resource }}_write" value="1" {{ old($resource . '_write') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                                <span class="ml-2 text-sm text-gray-700">Modification</span>
-                                            </label>
-                                            <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
-                                                <input type="hidden" name="{{ $resource }}_delete" value="0">
-                                                <input type="checkbox" name="{{ $resource }}_delete" value="1" {{ old($resource . '_delete') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                                <span class="ml-2 text-sm text-gray-700">Suppression</span>
-                                            </label>
+                            <p class="text-sm text-gray-500 mb-4">Sélectionnez les permissions que ce groupe accorde à ses membres.</p>
+
+                            <div class="space-y-4">
+                                @if(isset($permissions) && $permissions->count() > 0)
+                                    @foreach($permissions->groupBy('resource') as $resource => $resourcePermissions)
+                                        <div class="border border-gray-200 rounded-lg p-4">
+                                            <h4 class="text-md font-semibold text-gray-800 mb-3 capitalize">{{ $resource }}</h4>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                @foreach($resourcePermissions as $permission)
+                                                    <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
+                                                        <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                                        <span class="ml-2 text-sm text-gray-700">{{ $permission->display_name }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
                                         </div>
+                                    @endforeach
+                                @else
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <p class="text-sm text-yellow-800">Aucune permission disponible. Veuillez exécuter le seeder des permissions.</p>
                                     </div>
-                                @endforeach
-                                
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h4 class="text-md font-semibold text-gray-800 mb-3">Utilisateurs</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
-                                        <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50">
-                                            <input type="hidden" name="can_invite" value="0">
-                                            <input type="checkbox" name="can_invite" value="1" {{ old('can_invite') ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                            <span class="ml-2 text-sm text-gray-700">Inviter des utilisateurs</span>
-                                        </label>
-                                    </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
 

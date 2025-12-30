@@ -25,6 +25,20 @@ class InterventionController extends Controller
         
         $query = Intervention::with(['technician.company', 'tags']);
         
+        // Filtrer les interventions pour n'afficher que celles dont le technicien appartient à une company
+        // qui fait partie d'une organisation où l'utilisateur a la permission de lecture des companies
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $query->where(function ($q) use ($organizationIds) {
+                // Soit l'intervention a un technicien dont la company est accessible
+                $q->whereHas('technician.company.organizations', function ($orgQuery) use ($organizationIds) {
+                    $orgQuery->whereIn('organizations.id', $organizationIds);
+                })
+                // Soit l'intervention n'a pas de technicien (technician_id est null)
+                ->orWhereNull('technician_id');
+            });
+        }
+        
         // Recherche par technicien, client (title) ou date
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -67,11 +81,21 @@ class InterventionController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer des interventions.');
         }
         
-        $technicians = Technician::where('is_active', true)
+        $query = Technician::where('is_active', true)
             ->with('company')
             ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
+            ->orderBy('first_name');
+        
+        // Filtrer les techniciens pour n'afficher que ceux dont la company appartient à une organisation
+        // où l'utilisateur a la permission de lecture des companies
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $query->whereHas('company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        
+        $technicians = $query->get();
         $tags = Tag::orderBy('name')->get();
         
         return view('interventions.create', compact('technicians', 'tags'));
@@ -109,6 +133,21 @@ class InterventionController extends Controller
             'tags.*' => 'exists:tags,id',
         ]);
 
+        // Vérifier que le technicien sélectionné est accessible si un technicien est fourni
+        if (isset($validated['technician_id']) && $validated['technician_id'] !== null && !$user->isOwner()) {
+            $technician = Technician::with('company')->findOrFail($validated['technician_id']);
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['technician_id' => 'Vous n\'avez pas accès à ce technicien.']);
+            }
+        }
+
         // Si "Non noté" est coché, mettre note à NULL
         if ($request->boolean('no_note')) {
             $validated['note'] = null;
@@ -138,6 +177,19 @@ class InterventionController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les interventions.');
         }
         
+        // Vérifier que l'utilisateur a le droit de voir cette intervention
+        // (via le technicien et sa company)
+        if (!$user->isOwner() && $intervention->technician_id !== null) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $intervention->technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à cette intervention.');
+            }
+        }
+        
         $intervention->load('technician.company', 'tags');
         
         return view('interventions.show', compact('intervention'));
@@ -154,11 +206,35 @@ class InterventionController extends Controller
         if (!$user->canWriteInterventions()) {
             abort(403, 'Vous n\'avez pas la permission de modifier des interventions.');
         }
-        $technicians = Technician::where('is_active', true)
+        
+        // Vérifier que l'utilisateur a le droit de voir cette intervention
+        // (via le technicien et sa company)
+        if (!$user->isOwner() && $intervention->technician_id !== null) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $intervention->technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à cette intervention.');
+            }
+        }
+        
+        $query = Technician::where('is_active', true)
             ->with('company')
             ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
+            ->orderBy('first_name');
+        
+        // Filtrer les techniciens pour n'afficher que ceux dont la company appartient à une organisation
+        // où l'utilisateur a la permission de lecture des companies
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $query->whereHas('company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        
+        $technicians = $query->get();
         
         $tags = Tag::orderBy('name')->get();
 
@@ -175,6 +251,19 @@ class InterventionController extends Controller
         // Vérifier la permission d'écriture
         if (!$user->canWriteInterventions()) {
             abort(403, 'Vous n\'avez pas la permission de modifier des interventions.');
+        }
+        
+        // Vérifier que l'utilisateur a le droit de voir cette intervention
+        // (via le technicien et sa company)
+        if (!$user->isOwner() && $intervention->technician_id !== null) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $intervention->technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à cette intervention.');
+            }
         }
         
         $validated = $request->validate([
@@ -196,6 +285,21 @@ class InterventionController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
+
+        // Vérifier que le technicien sélectionné est accessible si un technicien est fourni
+        if (isset($validated['technician_id']) && $validated['technician_id'] !== null && !$user->isOwner()) {
+            $technician = Technician::with('company')->findOrFail($validated['technician_id']);
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['technician_id' => 'Vous n\'avez pas accès à ce technicien.']);
+            }
+        }
 
         $validated['is_completed'] = $request->boolean('is_completed');
 
@@ -229,6 +333,19 @@ class InterventionController extends Controller
         // Vérifier la permission de suppression
         if (!$user->canDeleteInterventions()) {
             abort(403, 'Vous n\'avez pas la permission de supprimer des interventions.');
+        }
+        
+        // Vérifier que l'utilisateur a le droit de voir cette intervention
+        // (via le technicien et sa company)
+        if (!$user->isOwner() && $intervention->technician_id !== null) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $hasAccess = $intervention->technician->company->organizations()
+                ->whereIn('organizations.id', $organizationIds)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Vous n\'avez pas accès à cette intervention.');
+            }
         }
         
         $intervention->delete();

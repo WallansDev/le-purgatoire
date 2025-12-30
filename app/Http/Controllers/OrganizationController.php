@@ -117,13 +117,8 @@ class OrganizationController extends Controller
         
         $organization->load(['groups' => function ($query) use ($user) {
             $query->withCount('users')->latest();
-            
-            // Filtrer les groupes pour n'afficher que ceux auxquels l'utilisateur appartient (sauf le propriétaire)
-            if (!$user->isOwner()) {
-                $query->whereHas('users', function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-            }
+
+            // Les groupes sont déjà filtrés au niveau de l'organisation, pas besoin de filtrer supplémentaire
         }]);
         
         return view('organizations.show', compact('organization'));

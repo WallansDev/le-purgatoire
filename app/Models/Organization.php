@@ -42,6 +42,16 @@ class Organization extends Model
                 $organization->slug = Str::slug($organization->name);
             }
         });
+
+        static::created(function ($organization) {
+            // Créer un groupe par défaut pour la nouvelle organisation
+            $organization->groups()->create([
+                'name' => 'Groupe par défaut',
+                'description' => 'Groupe créé automatiquement pour cette organisation',
+                'is_default' => true,
+                // Permissions par défaut (aucune permission activée)
+            ]);
+        });
     }
 
     /**

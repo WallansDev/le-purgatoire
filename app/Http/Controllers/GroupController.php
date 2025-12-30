@@ -25,11 +25,10 @@ class GroupController extends Controller
         
         $query = Group::with(['organization', 'users'])->withCount('users');
         
-        // Filtrer pour n'afficher que les groupes auxquels l'utilisateur appartient (sauf le propriétaire)
+        // Filtrer pour n'afficher que les groupes des organisations où l'utilisateur a la permission de lecture des groupes
         if (!$user->isOwner()) {
-            $query->whereHas('users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            });
+            $organizationIds = $user->getOrganizationIdsWithGroupsRead();
+            $query->whereIn('organization_id', $organizationIds);
         }
         
         // Recherche par nom ou organisation
@@ -51,13 +50,12 @@ class GroupController extends Controller
         
         $groups = $query->latest()->paginate(15)->withQueryString();
         
-        // Filtrer les organisations pour le filtre (seulement celles auxquelles l'utilisateur appartient)
+        // Filtrer les organisations pour le filtre (seulement celles où l'utilisateur a la permission de lecture des groupes)
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
         } else {
-            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->orderBy('name')->get();
+            $organizationIds = $user->getOrganizationIdsWithGroupsRead();
+            $organizations = Organization::whereIn('id', $organizationIds)->orderBy('name')->get();
         }
         
         return view('groups.index', compact('groups', 'organizations'));
@@ -69,22 +67,24 @@ class GroupController extends Controller
     public function create(): View
     {
         $user = auth()->user();
-        
+
         // Vérifier la permission d'écriture
         if (!$user->canWriteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de créer des groupes.');
         }
-        
-        // Filtrer les organisations : seulement celles auxquelles l'utilisateur appartient (sauf le propriétaire)
+
+        // Filtrer les organisations : seulement celles où l'utilisateur a la permission d'écriture des groupes
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
         } else {
-            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->orderBy('name')->get();
+            $organizationIds = $user->getOrganizationIdsWithGroupsWrite();
+            $organizations = Organization::whereIn('id', $organizationIds)->orderBy('name')->get();
         }
-        
-        return view('groups.create', compact('organizations'));
+
+        // Récupérer toutes les permissions disponibles
+        $permissions = \App\Models\Permission::orderBy('resource')->orderBy('action')->get();
+
+        return view('groups.create', compact('organizations', 'permissions'));
     }
 
     /**
@@ -93,52 +93,48 @@ class GroupController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = auth()->user();
-        
+
         // Vérifier la permission d'écriture
         if (!$user->canWriteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de créer des groupes.');
         }
+
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'is_default' => 'boolean',
-            // Permissions Companies
-            'companies_read' => 'nullable|boolean',
-            'companies_write' => 'nullable|boolean',
-            'companies_delete' => 'nullable|boolean',
-            // Permissions Technicians
-            'technicians_read' => 'nullable|boolean',
-            'technicians_write' => 'nullable|boolean',
-            'technicians_delete' => 'nullable|boolean',
-            // Permissions Interventions
-            'interventions_read' => 'nullable|boolean',
-            'interventions_write' => 'nullable|boolean',
-            'interventions_delete' => 'nullable|boolean',
-            // Permissions Organizations
-            'organizations_read' => 'nullable|boolean',
-            'organizations_write' => 'nullable|boolean',
-            'organizations_delete' => 'nullable|boolean',
-            // Permissions Groups
-            'groups_read' => 'nullable|boolean',
-            'groups_write' => 'nullable|boolean',
-            'groups_delete' => 'nullable|boolean',
-            // Permission Invite
-            'can_invite' => 'nullable|boolean',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
+
+        // Vérifier que l'utilisateur peut créer des groupes dans cette organisation
+        if (!$user->isOwner() && !in_array($validated['organization_id'], $user->getOrganizationIdsWithGroupsWrite())) {
+            abort(403, 'Vous n\'avez pas la permission de créer des groupes dans cette organisation.');
+        }
 
         // Vérifier l'unicité du nom dans l'organisation
         $exists = Group::where('organization_id', $validated['organization_id'])
             ->where('name', $validated['name'])
             ->exists();
-            
+
         if ($exists) {
             return back()
                 ->withInput()
                 ->withErrors(['name' => 'Un groupe avec ce nom existe déjà dans cette organisation.']);
         }
 
-        Group::create($validated);
+        $group = Group::create([
+            'organization_id' => $validated['organization_id'],
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'is_default' => $validated['is_default'] ?? false,
+        ]);
+
+        // Attacher les permissions
+        if (isset($validated['permissions'])) {
+            $group->permissions()->attach($validated['permissions'], ['scope' => 'organization']);
+        }
 
         return redirect()->route('groups.index')
             ->with('success', 'Groupe créé avec succès.');
@@ -156,8 +152,8 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les groupes.');
         }
         
-        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
-        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+        // Vérifier que l'utilisateur a la permission d'écriture sur les groupes de cette organisation
+        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsWrite())) {
             abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
         
@@ -229,21 +225,26 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
         }
         
-        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
-        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+        // Vérifier que l'utilisateur a la permission d'écriture sur les groupes de cette organisation
+        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsWrite())) {
             abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
         
-        // Filtrer les organisations : seulement celles auxquelles l'utilisateur appartient (sauf le propriétaire)
+        // Filtrer les organisations : seulement celles où l'utilisateur a la permission d'écriture des groupes
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
         } else {
-            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->orderBy('name')->get();
+            $organizationIds = $user->getOrganizationIdsWithGroupsWrite();
+            $organizations = Organization::whereIn('id', $organizationIds)->orderBy('name')->get();
         }
+
+        // Charger les permissions du groupe
+        $group->load('permissions');
         
-        return view('groups.edit', compact('group', 'organizations'));
+        // Récupérer toutes les permissions disponibles
+        $permissions = \App\Models\Permission::orderBy('resource')->orderBy('action')->get();
+
+        return view('groups.edit', compact('group', 'organizations', 'permissions'));
     }
 
     /**
@@ -252,59 +253,52 @@ class GroupController extends Controller
     public function update(Request $request, Group $group): RedirectResponse
     {
         $user = auth()->user();
-        
+
         // Vérifier la permission d'écriture
         if (!$user->canWriteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
         }
-        
-        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
-        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+
+        // Vérifier que l'utilisateur a la permission d'écriture sur les groupes de cette organisation
+        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsWrite())) {
             abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
-        
+
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'is_default' => 'boolean',
-            // Permissions Companies
-            'companies_read' => 'nullable|boolean',
-            'companies_write' => 'nullable|boolean',
-            'companies_delete' => 'nullable|boolean',
-            // Permissions Technicians
-            'technicians_read' => 'nullable|boolean',
-            'technicians_write' => 'nullable|boolean',
-            'technicians_delete' => 'nullable|boolean',
-            // Permissions Interventions
-            'interventions_read' => 'nullable|boolean',
-            'interventions_write' => 'nullable|boolean',
-            'interventions_delete' => 'nullable|boolean',
-            // Permissions Organizations
-            'organizations_read' => 'nullable|boolean',
-            'organizations_write' => 'nullable|boolean',
-            'organizations_delete' => 'nullable|boolean',
-            // Permissions Groups
-            'groups_read' => 'nullable|boolean',
-            'groups_write' => 'nullable|boolean',
-            'groups_delete' => 'nullable|boolean',
-            // Permission Invite
-            'can_invite' => 'nullable|boolean',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
+
+        // Vérifier que l'utilisateur peut modifier des groupes dans cette organisation (si l'organisation change)
+        if (!$user->isOwner() && !in_array($validated['organization_id'], $user->getOrganizationIdsWithGroupsWrite())) {
+            abort(403, 'Vous n\'avez pas la permission de déplacer ce groupe vers cette organisation.');
+        }
 
         // Vérifier l'unicité du nom dans l'organisation (sauf pour ce groupe)
         $exists = Group::where('organization_id', $validated['organization_id'])
             ->where('name', $validated['name'])
             ->where('id', '!=', $group->id)
             ->exists();
-            
+
         if ($exists) {
             return back()
                 ->withInput()
                 ->withErrors(['name' => 'Un groupe avec ce nom existe déjà dans cette organisation.']);
         }
 
-        $group->update($validated);
+        $group->update([
+            'organization_id' => $validated['organization_id'],
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'is_default' => $validated['is_default'] ?? false,
+        ]);
+
+        // Synchroniser les permissions
+        $group->permissions()->sync($validated['permissions'] ?? []);
 
         return redirect()->route('groups.index')
             ->with('success', 'Groupe mis à jour avec succès.');
@@ -321,12 +315,18 @@ class GroupController extends Controller
         if (!$user->canDeleteGroups()) {
             abort(403, 'Vous n\'avez pas la permission de supprimer des groupes.');
         }
-        
-        // Vérifier que l'utilisateur appartient au groupe (sauf le propriétaire)
-        if (!$user->isOwner() && !$group->users()->where('users.id', $user->id)->exists()) {
+
+        // Vérifier que l'utilisateur a la permission de suppression sur les groupes de cette organisation
+        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsDelete())) {
             abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
-        
+
+        // Vérifier qu'il reste au moins un groupe dans l'organisation
+        if ($group->organization->groups()->count() <= 1) {
+            return back()
+                ->with('error', 'Impossible de supprimer le dernier groupe d\'une organisation. Chaque organisation doit avoir au moins un groupe.');
+        }
+
         $group->delete();
 
         return redirect()->route('groups.index')

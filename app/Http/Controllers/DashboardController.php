@@ -12,15 +12,35 @@ class DashboardController extends Controller
 {
     public function __invoke(): View
     {
-        $totalInterventions = Intervention::count();
-        $completedInterventions = Intervention::where('is_completed', true)->count();
+        $user = auth()->user();
+        
+        // Construire la requête de base pour les techniciens accessibles
+        $technicianQuery = Technician::query();
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $technicianQuery->whereHas('company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        
+        // Construire la requête de base pour les interventions accessibles
+        $interventionQuery = Intervention::query();
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $interventionQuery->whereHas('technician.company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        
+        $totalInterventions = (clone $interventionQuery)->count();
+        $completedInterventions = (clone $interventionQuery)->where('is_completed', true)->count();
         $pendingInterventions = $totalInterventions - $completedInterventions;
-        $lateInterventions = Intervention::where('was_late', true)->count();
+        $lateInterventions = (clone $interventionQuery)->where('was_late', true)->count();
 
         $stats = [
             'companies' => Company::count(),
-            'technicians' => Technician::count(),
-            'activeTechnicians' => Technician::where('is_active', true)->count(),
+            'technicians' => (clone $technicianQuery)->count(),
+            'activeTechnicians' => (clone $technicianQuery)->where('is_active', true)->count(),
             'interventions' => $totalInterventions,
             'completedInterventions' => $completedInterventions,
             'pendingInterventions' => $pendingInterventions,
@@ -28,19 +48,22 @@ class DashboardController extends Controller
             'onTimeRate' => $totalInterventions > 0 ? round((1 - ($lateInterventions / $totalInterventions)) * 100, 1) : null,
         ];
 
-        $upcomingInterventions = Intervention::with('technician.company')
+        $upcomingInterventions = (clone $interventionQuery)
+            ->with('technician.company')
             ->where('is_completed', false)
             ->whereDate('scheduled_at', '>=', Carbon::now()->startOfDay())
             ->orderBy('scheduled_at')
             ->limit(5)
             ->get();
 
-        $recentInterventions = Intervention::with('technician.company')
+        $recentInterventions = (clone $interventionQuery)
+            ->with('technician.company')
             ->latest('updated_at')
             ->limit(5)
             ->get();
 
-        $topTechnicians = Technician::with('company')
+        $topTechnicians = (clone $technicianQuery)
+            ->with('company')
             ->withCount('interventions')
             ->withAvg('interventions as avg_service_note', 'service_note')
             ->withCount([
