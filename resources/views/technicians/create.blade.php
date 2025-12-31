@@ -53,6 +53,12 @@
                             </div>
 
                             <div>
+                                <x-input-label for="department" :value="__('Département')" />
+                                <x-text-input id="department" class="block mt-1 w-full" type="text" name="department" :value="old('department')" />
+                                <x-input-error :messages="$errors->get('department')" class="mt-2" />
+                            </div>
+
+                            <div>
                                 <x-input-label for="is_active" :value="__('Statut')" />
                                 <div class="mt-2">
                                     <label class="inline-flex items-center">

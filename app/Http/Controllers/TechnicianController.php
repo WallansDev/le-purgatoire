@@ -33,6 +33,16 @@ class TechnicianController extends Controller
             });
         }
         
+        // Filtre par entreprise
+        if ($request->filled('company_id')) {
+            $query->where('company_id', $request->get('company_id'));
+        }
+        
+        // Filtre par département
+        if ($request->filled('department')) {
+            $query->where('department', $request->get('department'));
+        }
+        
         // Recherche par nom, prénom, téléphone ou email
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -50,7 +60,27 @@ class TechnicianController extends Controller
             ->paginate(200)
             ->withQueryString();
         
-        return view('technicians.index', compact('technicians'));
+        // Récupérer les entreprises et départements pour les filtres
+        $companiesQuery = Company::query();
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $companiesQuery->whereHas('organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        $companies = $companiesQuery->orderBy('name')->get();
+        
+        // Récupérer les départements distincts
+        $departmentsQuery = Technician::select('department')->distinct()->whereNotNull('department');
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            $departmentsQuery->whereHas('company.organizations', function ($q) use ($organizationIds) {
+                $q->whereIn('organizations.id', $organizationIds);
+            });
+        }
+        $departments = $departmentsQuery->orderBy('department')->pluck('department')->filter()->values();
+        
+        return view('technicians.index', compact('technicians', 'companies', 'departments'));
     }
 
     /**
@@ -95,6 +125,7 @@ class TechnicianController extends Controller
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'department' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -198,6 +229,7 @@ class TechnicianController extends Controller
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'department' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 

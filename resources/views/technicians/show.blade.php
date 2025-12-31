@@ -40,6 +40,10 @@
                             </p>
                         </div>
                         <div>
+                            <p class="text-sm text-gray-500">Département</p>
+                            <p class="text-gray-900">{{ $technician->department ?? '-' }}</p>
+                        </div>
+                        <div>
                             <p class="text-sm text-gray-500">Email</p>
                             <p class="text-gray-900">{{ $technician->email ?? '-' }}</p>
                         </div>

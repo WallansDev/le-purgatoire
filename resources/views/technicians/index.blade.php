@@ -24,20 +24,38 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
                     <form method="GET" action="{{ route('technicians.index') }}" class="mb-4">
-                        <div class="flex gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
                             <input type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Rechercher par nom, prénom, téléphone ou email..."
-                                class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <button type="submit"
-                                class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                                Rechercher
-                            </button>
-                            @if (request('search'))
-                                <a href="{{ route('technicians.index') }}"
-                                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                    Réinitialiser
-                                </a>
-                            @endif
+                                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <select name="company_id" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Toutes les entreprises</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
+                                        {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <select name="department" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Tous les départements</option>
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept }}" {{ request('department') == $dept ? 'selected' : '' }}>
+                                        {{ $dept }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="flex gap-2">
+                                <button type="submit"
+                                    class="flex-1 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                    Rechercher
+                                </button>
+                                @if (request('search') || request('company_id') || request('department'))
+                                    <a href="{{ route('technicians.index') }}"
+                                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                                        Réinitialiser
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </form>
                     <div class="overflow-x-auto">
@@ -51,6 +69,10 @@
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Entreprise
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Département
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -96,6 +118,9 @@
                                                     -
                                                 @endif
                                             </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-500">{{ $technician->department ?? '-' }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-500">{{ $technician->email ?? '-' }}</div>
@@ -145,7 +170,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                             Aucun technicien trouvé.
                                         </td>
                                     </tr>

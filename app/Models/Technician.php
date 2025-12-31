@@ -19,6 +19,7 @@ class Technician extends Model
         'last_name',
         'phone',
         'email',
+        'department',
         'is_active',
     ];
 
