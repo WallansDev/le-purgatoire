@@ -96,5 +96,35 @@ class Group extends Model
     {
         return $this->hasPermission('users', 'invite');
     }
+
+    /**
+     * Accessor for can_read (checks if group has any read permission)
+     */
+    public function getCanReadAttribute(): bool
+    {
+        return $this->permissions()
+            ->where('action', 'read')
+            ->exists();
+    }
+
+    /**
+     * Accessor for can_write (checks if group has any write permission)
+     */
+    public function getCanWriteAttribute(): bool
+    {
+        return $this->permissions()
+            ->where('action', 'write')
+            ->exists();
+    }
+
+    /**
+     * Accessor for can_delete (checks if group has any delete permission)
+     */
+    public function getCanDeleteAttribute(): bool
+    {
+        return $this->permissions()
+            ->where('action', 'delete')
+            ->exists();
+    }
 }
 

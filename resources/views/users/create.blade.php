@@ -101,10 +101,10 @@
                                                                 @if($group->can_delete)
                                                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Suppression</span>
                                                                 @endif
-                                                                @if($group->can_invite)
+                                                                @if($group->canInvite())
                                                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Inviter</span>
                                                                 @endif
-                                                                @if(!$group->can_read && !$group->can_write && !$group->can_delete && !$group->can_invite)
+                                                                @if(!$group->can_read && !$group->can_write && !$group->can_delete && !$group->canInvite())
                                                                     <span class="text-xs text-gray-400">Aucune permission</span>
                                                                 @endif
                                                             </div>

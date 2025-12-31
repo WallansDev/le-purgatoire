@@ -159,11 +159,7 @@ class GroupController extends Controller
         
         $group->load(['organization', 'users']);
         
-        // Récupérer tous les utilisateurs pour le formulaire d'ajout
-        $allUsers = User::orderBy('first_name')->orderBy('last_name')->get();
-        $groupUserIds = $group->users->pluck('id')->toArray();
-        
-        return view('groups.show', compact('group', 'allUsers', 'groupUserIds'));
+        return view('groups.show', compact('group'));
     }
     
     /**
@@ -173,23 +169,32 @@ class GroupController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier la permission d'écriture (nécessaire pour modifier un groupe)
-        if (!$user->canWriteGroups()) {
-            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        // Vérifier la permission d'écriture sur les groupes de cette organisation
+        if (!$user->isOwner() && !$user->hasPermissionInOrganization('groups', 'write', $group->organization)) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes dans cette organisation.');
         }
+        
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'email' => 'required|email',
         ]);
         
-        $userId = $validated['user_id'];
+        // Rechercher l'utilisateur par email
+        $userToAdd = User::where('email', $validated['email'])->first();
+        
+        if (!$userToAdd) {
+            return back()
+                ->withInput()
+                ->with('error', 'Aucun utilisateur trouvé avec cette adresse email.');
+        }
         
         // Vérifier si l'utilisateur n'est pas déjà membre
-        if ($group->users()->where('users.id', $userId)->exists()) {
+        if ($group->users()->where('users.id', $userToAdd->id)->exists()) {
             return back()
+                ->withInput()
                 ->with('error', 'Cet utilisateur est déjà membre de ce groupe.');
         }
         
-        $group->users()->attach($userId);
+        $group->users()->attach($userToAdd->id);
         
         return back()
             ->with('success', 'Utilisateur ajouté au groupe avec succès.');
@@ -202,9 +207,9 @@ class GroupController extends Controller
     {
         $currentUser = auth()->user();
         
-        // Vérifier la permission d'écriture (nécessaire pour modifier un groupe)
-        if (!$currentUser->canWriteGroups()) {
-            abort(403, 'Vous n\'avez pas la permission de modifier des groupes.');
+        // Vérifier la permission d'écriture sur les groupes de cette organisation
+        if (!$currentUser->isOwner() && !$currentUser->hasPermissionInOrganization('groups', 'write', $group->organization)) {
+            abort(403, 'Vous n\'avez pas la permission de modifier des groupes dans cette organisation.');
         }
         
         $group->users()->detach($user->id);

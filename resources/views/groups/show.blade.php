@@ -90,19 +90,14 @@
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="user_id"
-                                        class="block text-sm font-medium text-gray-700 mb-1">Utilisateur *</label>
-                                    <select name="user_id" id="user_id" required
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                        <option value="">Sélectionner un utilisateur</option>
-                                        @foreach ($allUsers as $user)
-                                            @if (!in_array($user->id, $groupUserIds))
-                                                <option value="{{ $user->id }}">{{ $user->full_name }}
-                                                    ({{ $user->email }})
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Adresse
+                                        email *</label>
+                                    <input type="email" name="email" id="email" value="{{ old('email') }}"
+                                        required placeholder="exemple@email.com"
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('email') border-red-300 @enderror">
+                                    @error('email')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div class="flex items-end">
                                     <button type="submit"
@@ -111,8 +106,8 @@
                                     </button>
                                 </div>
                             </div>
-                            <p class="mt-2 text-sm text-gray-500">Les permissions sont définies au niveau du groupe pour
-                                chaque ressource.</p>
+                            <p class="mt-2 text-sm text-gray-500">Entrez l'adresse email de l'utilisateur à ajouter au
+                                groupe. Les permissions sont définies au niveau du groupe pour chaque ressource.</p>
                         </form>
                     </div>
                 </div>
@@ -133,6 +128,16 @@
                     @if (session('error'))
                         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                             {{ session('error') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
 

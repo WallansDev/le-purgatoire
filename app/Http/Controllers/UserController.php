@@ -40,25 +40,22 @@ class UserController extends Controller
     {
         $user = auth()->user();
         
+        // Vérifier la permission d'invitation
+        if (!$user->canInvite()) {
+            abort(403, 'Vous n\'avez pas la permission d\'inviter des utilisateurs.');
+        }
+        
         // Seul le propriétaire peut voir toutes les organisations et groupes
         if ($user->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
             $groups = Group::with('organization')->orderBy('name')->get();
         } else {
-            // Filtrer selon l'appartenance : l'utilisateur doit appartenir aux groupes/organisations
-            // ET avoir la permission can_invite pour inviter des utilisateurs
-            $organizations = Organization::whereHas('groups.users', function ($q) use ($user) {
-                $q->where('users.id', $user->id)
-                  ->where('groups.can_invite', true);
-            })->orderBy('name')->get();
+            // Filtrer selon les organisations où l'utilisateur a la permission d'inviter
+            $organizationIds = $user->getOrganizationIdsWithPermission('users', 'invite');
+            $organizations = Organization::whereIn('id', $organizationIds)->orderBy('name')->get();
             
-            $groups = Group::whereHas('users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })
-            ->where('can_invite', true)
-            ->with('organization')
-            ->orderBy('name')
-            ->get();
+            // Filtrer les groupes où l'utilisateur a la permission d'inviter
+            $groups = $user->getGroupsWhereCanInvite();
         }
         
         return view('users.create', compact('organizations', 'groups'));
@@ -79,6 +76,11 @@ class UserController extends Controller
             'group_ids' => 'nullable|array',
             'group_ids.*' => 'exists:groups,id',
         ]);
+        
+        // Vérifier la permission d'invitation
+        if (!$user->canInvite()) {
+            abort(403, 'Vous n\'avez pas la permission d\'inviter des utilisateurs.');
+        }
         
         // Vérifier que l'utilisateur peut inviter dans les groupes sélectionnés
         if ($request->filled('group_ids') && !$user->isOwner()) {
@@ -136,25 +138,22 @@ class UserController extends Controller
 
         $currentUser = auth()->user();
         
+        // Vérifier la permission d'invitation
+        if (!$currentUser->canInvite()) {
+            abort(403, 'Vous n\'avez pas la permission d\'inviter des utilisateurs.');
+        }
+        
         // Seul le propriétaire peut voir toutes les organisations et groupes
         if ($currentUser->isOwner()) {
             $organizations = Organization::orderBy('name')->get();
             $groups = Group::with('organization')->orderBy('name')->get();
         } else {
-            // Filtrer selon l'appartenance : l'utilisateur doit appartenir aux groupes/organisations
-            // ET avoir la permission can_invite pour inviter des utilisateurs
-            $organizations = Organization::whereHas('groups.users', function ($q) use ($currentUser) {
-                $q->where('users.id', $currentUser->id)
-                  ->where('groups.can_invite', true);
-            })->orderBy('name')->get();
+            // Filtrer selon les organisations où l'utilisateur a la permission d'inviter
+            $organizationIds = $currentUser->getOrganizationIdsWithPermission('users', 'invite');
+            $organizations = Organization::whereIn('id', $organizationIds)->orderBy('name')->get();
             
-            $groups = Group::whereHas('users', function ($q) use ($currentUser) {
-                $q->where('users.id', $currentUser->id);
-            })
-            ->where('can_invite', true)
-            ->with('organization')
-            ->orderBy('name')
-            ->get();
+            // Filtrer les groupes où l'utilisateur a la permission d'inviter
+            $groups = $currentUser->getGroupsWhereCanInvite();
         }
         
         $user->load('groups');
