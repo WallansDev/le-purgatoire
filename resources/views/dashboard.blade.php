@@ -141,6 +141,32 @@
                         class="text-sm text-indigo-600 hover:text-indigo-800">Gérer les techniciens</a>
                 </div>
 
+                <form method="GET" action="{{ route('dashboard') }}" class="mb-4">
+                    <div class="flex gap-2 items-end">
+                        <div class="flex-1 max-w-xs">
+                            <label for="company_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                Filtrer par entreprise
+                            </label>
+                            <select name="company_id" id="company_id"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                onchange="this.form.submit()">
+                                <option value="">Toutes les entreprises</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
+                                        {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if(request('company_id'))
+                            <a href="{{ route('dashboard') }}"
+                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                                Réinitialiser
+                            </a>
+                        @endif
+                    </div>
+                </form>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -206,7 +232,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">
                                         Pas encore de données suffisantes pour établir un classement.
                                     </td>
                                 </tr>

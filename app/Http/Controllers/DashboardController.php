@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Intervention;
 use App\Models\Technician;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
         $user = auth()->user();
         
@@ -76,7 +77,13 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $topTechnicians = (clone $technicianQuery)
+        // Filtrer par entreprise si sélectionnée
+        $topTechniciansQuery = clone $technicianQuery;
+        if ($request->filled('company_id')) {
+            $topTechniciansQuery->where('company_id', $request->get('company_id'));
+        }
+        
+        $topTechnicians = $topTechniciansQuery
             ->with('company')
             ->withCount('interventions')
             ->withAvg('interventions as avg_service_note', 'service_note')
@@ -119,11 +126,15 @@ class DashboardController extends Controller
             })
             ->take(10);
 
+        // Récupérer les entreprises pour le filtre
+        $companies = (clone $companyQuery)->orderBy('name')->get();
+
         return view('dashboard', [
             'stats' => $stats,
             'upcomingInterventions' => $upcomingInterventions,
             'recentInterventions' => $recentInterventions,
             'topTechnicians' => $topTechnicians,
+            'companies' => $companies,
         ]);
     }
 }
