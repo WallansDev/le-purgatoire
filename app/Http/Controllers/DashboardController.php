@@ -23,6 +23,20 @@ class DashboardController extends Controller
             });
         }
         
+        // Construire la requête de base pour les entreprises accessibles
+        $companyQuery = Company::query();
+        if (!$user->isOwner()) {
+            $organizationIds = $user->getOrganizationIdsWithCompaniesRead();
+            if (empty($organizationIds)) {
+                // Si l'utilisateur n'a accès à aucune organisation, ne rien retourner
+                $companyQuery->whereRaw('1 = 0');
+            } else {
+                $companyQuery->whereHas('organizations', function ($q) use ($organizationIds) {
+                    $q->whereIn('organizations.id', $organizationIds);
+                });
+            }
+        }
+        
         // Construire la requête de base pour les interventions accessibles
         $interventionQuery = Intervention::query();
         if (!$user->isOwner()) {
@@ -38,7 +52,7 @@ class DashboardController extends Controller
         $lateInterventions = (clone $interventionQuery)->where('was_late', true)->count();
 
         $stats = [
-            'companies' => Company::count(),
+            'companies' => (clone $companyQuery)->count(),
             'technicians' => (clone $technicianQuery)->count(),
             'activeTechnicians' => (clone $technicianQuery)->where('is_active', true)->count(),
             'interventions' => $totalInterventions,
