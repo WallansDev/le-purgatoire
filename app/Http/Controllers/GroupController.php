@@ -152,8 +152,8 @@ class GroupController extends Controller
             abort(403, 'Vous n\'avez pas la permission de consulter les groupes.');
         }
         
-        // Vérifier que l'utilisateur a la permission d'écriture sur les groupes de cette organisation
-        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsWrite())) {
+        // Vérifier que l'utilisateur a la permission de lecture sur les groupes de cette organisation
+        if (!$user->isOwner() && !in_array($group->organization_id, $user->getOrganizationIdsWithGroupsRead())) {
             abort(403, 'Vous n\'avez pas accès à ce groupe.');
         }
         

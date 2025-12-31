@@ -4,10 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Tags') }}
             </h2>
-            <a href="{{ route('tags.create') }}"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Nouveau tag
-            </a>
+            @if (auth()->user()->canWriteTags())
+                <a href="{{ route('tags.create') }}"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Nouveau tag
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -95,15 +97,19 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <a href="{{ route('tags.show', $tag) }}"
                                                 class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
-                                            <a href="{{ route('tags.edit', $tag) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
-                                            <form action="{{ route('tags.destroy', $tag) }}" method="POST"
-                                                class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900"
-                                                    onclick="return confirm('Supprimer ce tag ?')">Supprimer</button>
-                                            </form>
+                                            @if (auth()->user()->canWriteTags())
+                                                <a href="{{ route('tags.edit', $tag) }}"
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
+                                            @endif
+                                            @if (auth()->user()->canDeleteTags())
+                                                <form action="{{ route('tags.destroy', $tag) }}" method="POST"
+                                                    class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900"
+                                                        onclick="return confirm('Supprimer ce tag ?')">Supprimer</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

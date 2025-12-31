@@ -89,13 +89,13 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white border-l border-gray-100">
-                                            @if(auth()->user()->canReadOrganizations())
+                                            @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'read', $organization))
                                                 <a href="{{ route('organizations.show', $organization) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
                                             @endif
-                                            @if(auth()->user()->canWriteOrganizations())
+                                            @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'write', $organization))
                                                 <a href="{{ route('organizations.edit', $organization) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
                                             @endif
-                                            @if(auth()->user()->canDeleteOrganizations())
+                                            @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'delete', $organization))
                                                 <form action="{{ route('organizations.destroy', $organization) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')

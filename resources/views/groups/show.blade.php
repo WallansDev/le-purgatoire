@@ -5,7 +5,7 @@
                 {{ __('Détails du groupe') }}
             </h2>
             <div>
-                @if(auth()->user()->canWriteGroups())
+                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'write', $group->organization))
                     <a href="{{ route('groups.edit', $group) }}"
                         class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
                         Modifier
@@ -28,9 +28,13 @@
                             <h3 class="text-2xl font-semibold text-gray-900">{{ $group->name }}</h3>
                             <p class="text-sm text-gray-500 mt-1">
                                 Organisation : 
-                                <a href="{{ route('organizations.show', $group->organization) }}" class="text-blue-600 hover:text-blue-900">
-                                    {{ $group->organization->name }}
-                                </a>
+                                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'read', $group->organization))
+                                    <a href="{{ route('organizations.show', $group->organization) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $group->organization->name }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-700">{{ $group->organization->name }}</span>
+                                @endif
                             </p>
                             <div class="mt-2 flex gap-2">
                                 @if($group->is_default)
@@ -53,9 +57,13 @@
                         <div>
                             <p class="text-sm text-gray-500">Organisation</p>
                             <p class="text-gray-900">
-                                <a href="{{ route('organizations.show', $group->organization) }}" class="text-blue-600 hover:text-blue-900">
-                                    {{ $group->organization->name }}
-                                </a>
+                                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'read', $group->organization))
+                                    <a href="{{ route('organizations.show', $group->organization) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $group->organization->name }}
+                                    </a>
+                                @else
+                                    <span>{{ $group->organization->name }}</span>
+                                @endif
                             </p>
                         </div>
                         <div>
@@ -118,7 +126,7 @@
                 </div>
             </div>
 
-            @if(auth()->user()->canWriteGroups())
+            @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'write', $group->organization))
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
@@ -195,7 +203,7 @@
                                                 <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                @if(auth()->user()->canWriteGroups())
+                                                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'write', $group->organization))
                                                     <form action="{{ route('groups.members.remove', [$group, $user]) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir retirer cet utilisateur du groupe ?')">
                                                         @csrf
                                                         @method('DELETE')

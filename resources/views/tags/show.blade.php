@@ -5,16 +5,23 @@
                 {{ $tag->name }}
             </h2>
             <div class="flex gap-2">
-                <a href="{{ route('tags.edit', $tag) }}" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                    Modifier
-                </a>
-                <form action="{{ route('tags.destroy', $tag) }}" method="POST" onsubmit="return confirm('Supprimer ce tag ?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                        Supprimer
-                    </button>
-                </form>
+                @if (auth()->user()->canWriteTags())
+                    <a href="{{ route('tags.edit', $tag) }}"
+                        class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                        Modifier
+                    </a>
+                @endif
+                @if (auth()->user()->canDeleteTags())
+                    <form action="{{ route('tags.destroy', $tag) }}" method="POST"
+                        onsubmit="return confirm('Supprimer ce tag ?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Supprimer
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -24,8 +31,9 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 space-y-4">
                     <div class="flex items-center gap-3">
-                        @if($tag->color)
-                            <span class="w-6 h-6 rounded-full border" style="background-color: {{ $tag->color }}"></span>
+                        @if ($tag->color)
+                            <span class="w-6 h-6 rounded-full border"
+                                style="background-color: {{ $tag->color }}"></span>
                         @endif
                         <div>
                             <p class="text-sm text-gray-500">Nom du tag</p>
@@ -43,11 +51,14 @@
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+
+            {{-- <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Interventions associées ({{ $tag->interventions->count() }})</h3>
-                        <a href="{{ route('interventions.index', ['tag' => $tag->id]) }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+                        <h3 class="text-lg font-semibold text-gray-800">Interventions associées
+                            ({{ $tag->interventions->count() }})</h3>
+                        <a href="{{ route('interventions.index', ['tag' => $tag->id]) }}"
+                            class="text-sm text-indigo-600 hover:text-indigo-800">
                             Filtrer les interventions
                         </a>
                     </div>
@@ -55,17 +66,22 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Technicien</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Programmée le</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Technicien</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Programmée le</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($tag->interventions as $intervention)
                                     <tr>
                                         <td class="px-4 py-4">
-                                            <a href="{{ route('interventions.show', $intervention) }}" class="text-sm font-semibold text-gray-900 hover:text-indigo-600">
+                                            <a href="{{ route('interventions.show', $intervention) }}"
+                                                class="text-sm font-semibold text-gray-900 hover:text-indigo-600">
                                                 {{ $intervention->title }}
                                             </a>
                                         </td>
@@ -76,12 +92,14 @@
                                             {{ $intervention->scheduled_at?->format('d/m/Y H:i') ?? '-' }}
                                         </td>
                                         <td class="px-4 py-4">
-                                            @if($intervention->is_completed)
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                            @if ($intervention->is_completed)
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
                                                     Complète
                                                 </span>
                                             @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-rose-100 text-rose-800">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-rose-100 text-rose-800">
                                                     Non terminée
                                                 </span>
                                             @endif
@@ -98,9 +116,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </x-app-layout>
-
-

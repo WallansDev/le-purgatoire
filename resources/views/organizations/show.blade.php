@@ -5,7 +5,7 @@
                 {{ __('Détails de l\'organisation') }}
             </h2>
             <div>
-                @if(auth()->user()->canWriteOrganizations())
+                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('organizations', 'write', $organization))
                     <a href="{{ route('organizations.edit', $organization) }}"
                         class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">
                         Modifier
@@ -79,10 +79,12 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold">Groupes ({{ $organization->groups->count() }})</h3>
-                        <a href="{{ route('groups.create', ['organization_id' => $organization->id]) }}"
-                            class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
-                            Ajouter un groupe
-                        </a>
+                        @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'write', $organization))
+                            <a href="{{ route('groups.create', ['organization_id' => $organization->id]) }}"
+                                class="bg-indigo-500 hover:bg-blue-700 text-white font-semibold text-sm py-2 px-4 rounded">
+                                Ajouter un groupe
+                            </a>
+                        @endif
                     </div>
 
                     @if ($organization->groups->count() > 0)
@@ -132,10 +134,10 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                @if(auth()->user()->canReadGroups())
+                                                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'read', $organization))
                                                     <a href="{{ route('groups.show', $group) }}" class="text-blue-600 hover:text-blue-900 mr-3">Voir</a>
                                                 @endif
-                                                @if(auth()->user()->canWriteGroups())
+                                                @if(auth()->user()->isOwner() || auth()->user()->hasPermissionInOrganization('groups', 'write', $organization))
                                                     <a href="{{ route('groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900">Modifier</a>
                                                 @endif
                                             </td>
